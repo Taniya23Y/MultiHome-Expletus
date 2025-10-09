@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
-const SignUp = ({ setShowAuth }) => {
+const SignUp = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -64,15 +65,19 @@ const SignUp = ({ setShowAuth }) => {
             Sign Up
           </button>
         </form>
+
         <p className="text-center text-sm mt-4 text-gray-500">
           Already have an account?{" "}
-          <span className="text-green-400 cursor-pointer">Sign In</span>
+          <Link
+            to="/signin"
+            className="text-green-400 cursor-pointer hover:underline"
+          >
+            Sign In
+          </Link>
         </p>
-        <p
-          className="text-center text-xs mt-2 text-gray-400 cursor-pointer hover:text-gray-600"
-          onClick={() => setShowAuth(false)} // 👈 close auth form
-        >
-          Back to Home
+
+        <p className="text-center text-xs mt-2 text-gray-400 cursor-pointer hover:text-gray-600">
+          <Link to="/">Back to Home</Link>
         </p>
       </div>
     </div>

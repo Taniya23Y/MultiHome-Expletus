@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
-const SignIn = ({ setShowAuth, setIsSignIn }) => {
+const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -27,6 +28,7 @@ const SignIn = ({ setShowAuth, setIsSignIn }) => {
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
             />
           </div>
+
           <div>
             <label className="block mb-1 font-medium">Password</label>
             <input
@@ -38,6 +40,7 @@ const SignIn = ({ setShowAuth, setIsSignIn }) => {
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
             />
           </div>
+
           <button
             type="submit"
             className="w-full cursor-pointer bg-green-400 text-white py-2 rounded-lg font-medium hover:bg-green-500 transition-colors"
@@ -45,20 +48,19 @@ const SignIn = ({ setShowAuth, setIsSignIn }) => {
             Sign In
           </button>
         </form>
+
         <p className="text-center text-sm mt-4 text-gray-500">
           Don’t have an account?{" "}
-          <span
+          <Link
+            to="/signup"
             className="text-green-400 cursor-pointer hover:underline"
-            onClick={() => setIsSignIn(false)} // 👈 this switches to SignUp
           >
             Sign Up
-          </span>
+          </Link>
         </p>
-        <p
-          className="text-center text-xs mt-2 text-gray-400 cursor-pointer hover:text-gray-600"
-          onClick={() => setShowAuth(false)} // 👈 close auth form
-        >
-          Back to Home
+
+        <p className="text-center text-xs mt-2 text-gray-400 cursor-pointer hover:text-gray-600">
+          <Link to="/">Back to Home</Link>
         </p>
       </div>
     </div>

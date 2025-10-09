@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 personal.md
+structure.md
 
 # Editor directories and files
 .vscode/*

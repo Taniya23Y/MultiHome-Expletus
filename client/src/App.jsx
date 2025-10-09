@@ -1,30 +1,23 @@
-import { useState } from "react";
-import Home from "./pages/Home";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "./components/Screens/HomePage/Home";
 import Navbar from "./pages/Navbar";
 import NotFound from "./pages/NotFound ";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/Signup";
 import Footer from "./utils/Footer";
+import Hero from "./components/Screens/HomePage/Hero";
 
 function App() {
-  const [showAuth, setShowAuth] = useState(false);
-  const [isSignIn, setIsSignIn] = useState(true);
   return (
     <>
-      <Navbar setShowAuth={setShowAuth} />
-
-      {/* Render Login/Signup only when clicked */}
-      {showAuth ? (
-        isSignIn ? (
-          <SignIn setShowAuth={setShowAuth} setIsSignIn={setIsSignIn} />
-        ) : (
-          <SignUp setShowAuth={setShowAuth} setIsSignIn={setIsSignIn} />
-        )
-      ) : (
-        <Home />
-      )}
-
-      <NotFound />
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Hero />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
       <Footer />
     </>
   );
