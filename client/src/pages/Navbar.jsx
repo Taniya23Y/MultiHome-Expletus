@@ -6,7 +6,7 @@ const Navbar = () => {
   const navItems = ["Home", "About", "Properties", "Services", "Contact"];
 
   return (
-    <header className="bg-white shadow-md rounded-xl mt-2 mx-3 p-2 relative z-50 max-w-7xl mx-auto">
+    <header className="bg-white shadow-md rounded-xl mt-2 mx-3 p-2 relative z-50 max-w-7xl">
       <div className="flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">

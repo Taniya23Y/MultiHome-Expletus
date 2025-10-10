@@ -5,4 +5,14 @@ body {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   margin: 0;
   padding: 0;
+  scroll-behavior: smooth;
+}
+
+@theme {
+  /* primary */
+  --color-primary: #f2f3ee;
+  --color-primary-dull: #4d4b46;
+  --color-secondary: #e4ed64;
+  --color-tertiary: #e4ed64;
+  --color-ascent: #e4ed64;
 }
