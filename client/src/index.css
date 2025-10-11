@@ -1,10 +1,12 @@
 @import "tailwindcss";
 
+html,
 body {
-  @apply bg-[#F2F3EE] text-gray-900;
+  @apply bg-[#F2F3EE] text-black;
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
   scroll-behavior: smooth;
 }
 
@@ -15,4 +17,14 @@ body {
   --color-secondary: #e4ed64;
   --color-tertiary: #e4ed64;
   --color-ascent: #e4ed64;
+}
+
+@layer components {
+  .max-container {
+    @apply mx-auto max-w-[1440px] px-4 lg:px-12;
+  }
+}
+
+.hero-font {
+  font-family: Helvetica, Arial, sans-serif;
 }
