@@ -13,6 +13,7 @@ dist-ssr
 *.local
 personal.md
 structure.md
+findLength.js
 
 # Editor directories and files
 .vscode/*
