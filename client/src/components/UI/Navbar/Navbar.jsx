@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { assets } from "../assets/data";
+import { assets } from "../../../assets/data";
 
 const Navbar = () => {
   const navItems = ["Home", "About", "Properties", "Services", "Contact"];

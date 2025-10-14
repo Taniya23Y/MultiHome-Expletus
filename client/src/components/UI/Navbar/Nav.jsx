@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { assets } from "../../assets/data";
+import { assets } from "../../../assets/data";
 import DesktopNav from "./DesktopNav";
 
 const Nav = () => {
