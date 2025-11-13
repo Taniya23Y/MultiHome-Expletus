@@ -1,59 +1,41 @@
 const express = require("express");
+const {
+  registrationUser,
+  activateUser,
+  loginUser,
+  logoutUser,
+  updateAccessToken,
+  getUserInfo,
+  socialAuth,
+  updateUserInfo,
+  updatePassword,
+  updateProfilePicture,
+  getAllUsers,
+  updateUserRole,
+  deleteUser,
+} = require("../controllers/userController");
+
+const { protect, admin } = require("../middleware/authMiddleware");
+
 const router = express.Router();
 
-// get route (data inside function + try...catch)
-router.get("/aboutdata", (req, res) => {
-  try {
-    // user data
-    const aboutData = {
-      companyName: "MultiHome",
-      foundedYear: 2024,
-      headquarters: "Indore, Madhya Pradesh, India",
-      founder: "Taniya Yadav",
-      tagline: "Simplifying Every Home Need — One Click at a Time 🏠",
+// Public routes
+router.post("/register", registrationUser);
+router.post("/activate", activateUser);
+router.post("/login", loginUser);
+router.post("/social-auth", socialAuth);
 
-      vision:
-        "To revolutionize the home improvement and real estate industry in India by connecting homeowners with trusted professionals effortlessly.",
+// Protected user routes
+router.get("/me", protect, getUserInfo);
+router.post("/logout", protect, logoutUser);
+router.put("/update-info", protect, updateUserInfo);
+router.put("/update-password", protect, updatePassword);
+router.put("/update-profile-picture", protect, updateProfilePicture);
+router.get("/refresh-token", protect, updateAccessToken);
 
-      mission: [
-        "To provide a one-stop platform for all home services — from construction to maintenance.",
-        "To empower local service providers by giving them online visibility and work opportunities.",
-        "To ensure customers get transparent pricing, verified experts, and top-quality services.",
-      ],
-
-      coreValues: [
-        "Customer First",
-        "Transparency",
-        "Trust & Quality",
-        "Innovation",
-        "Community Empowerment",
-      ],
-
-      // 📖 Our Story
-      story:
-        "MultiHome began with a simple idea — to make home management easier. Many people struggle to find reliable plumbers, painters, or builders. Our founder, Taniya Yadav, decided to bridge this gap through technology. Today, MultiHome is helping hundreds of users find trusted professionals in their city.",
-
-      contact: {
-        email: "support@multihome.in",
-        phone: "+91-9000000000",
-        website: "https://www.multihome.in",
-      },
-    };
-
-    // Sending data to postman
-    res.status(200).json({
-      status: 200,
-      message: "Data sent successfully!",
-      data: aboutData,
-    });
-  } catch (error) {
-    // Handle errors
-    res.status(500).json({
-      status: 500,
-      message: "Something went wrong",
-      error: error.message,
-    });
-  }
-});
+// Admin routes
+router.get("/", protect, admin, getAllUsers);
+router.put("/role/:id", protect, admin, updateUserRole);
+router.delete("/:id", protect, admin, deleteUser);
 
 module.exports = router;

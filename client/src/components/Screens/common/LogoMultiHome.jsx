@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Logo from "./Logo";
 
 const LogoMultiHome = () => {
   return (

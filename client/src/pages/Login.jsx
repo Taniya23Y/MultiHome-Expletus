@@ -4,7 +4,7 @@ import { FaEye, FaEyeSlash, FaEnvelope, FaLock } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { assets } from "../assets/data";
 
-const SignIn = () => {
+const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -48,7 +48,7 @@ const SignIn = () => {
       {/* Right Section */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
         <div className="bg-white shadow-2xl rounded-2xl p-6 sm:p-10 w-full max-w-md transition-transform hover:scale-[1.01]">
-          <h2 className="text-3xl font-bold text-center text-green-600 mb-6">
+          <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent mb-6">
             Sign In
           </h2>
 
@@ -65,7 +65,7 @@ const SignIn = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="Enter your email"
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
             </div>
 
@@ -81,23 +81,23 @@ const SignIn = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="Enter your password"
-                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute cursor-pointer right-3 top-[38px] text-gray-500 hover:text-green-500 transition text-lg"
+                className="absolute cursor-pointer right-3 top-[38px] text-gray-500 hover:text-blue-500 transition text-lg"
               >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
             </div>
 
-            {/* Sign In Button */}
+            {/* Login Button */}
             <button
               type="submit"
-              className="w-full bg-green-500 cursor-pointer text-white py-2 rounded-lg font-semibold hover:bg-green-600 transition duration-200 text-sm"
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 cursor-pointer text-white py-2 rounded-lg font-semibold hover:bg-green-600 transition duration-200 text-sm"
             >
-              Sign In
+              Login
             </button>
           </form>
 
@@ -122,7 +122,7 @@ const SignIn = () => {
             Don’t have an account?{" "}
             <Link
               to="/signup"
-              className="text-green-500 cursor-pointer hover:underline font-medium"
+              className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent cursor-pointer hover:underline font-medium"
             >
               Sign Up
             </Link>
@@ -137,4 +137,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default Login;
