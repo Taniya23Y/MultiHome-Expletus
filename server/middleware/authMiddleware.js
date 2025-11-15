@@ -1,43 +1,62 @@
+require("dotenv").config();
 const jwt = require("jsonwebtoken");
-const users = require("../data/users");
+const redis = require("../config/redis");
+const ErrorHandler = require("../utils/ErrorHandler");
 
-const SECRET = process.env.JWT_SECRET;
+// Protect routes: check access_token cookie & Redis session
+const protect = async (req, res, next) => {
+  try {
+    const token = req.cookies?.access_token;
 
-const protect = (req, res, next) => {
-  let token;
-
-  // checking authorization headers coming from request
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    try {
-      // split the two strings
-      token = req.headers.authorization.split(" ")[1];
-
-      // verify the token
-      const decoded = jwt.verify(token, SECRET);
-
-      // finding user
-      const user = users.find((u) => u.id === decoded.id);
-
-      // if not present then
-      if (!user) return res.status(401).json({ message: "User not found" });
-
-      // now to attach the user into the request
-      req.user = user;
-      next();
-    } catch (error) {
-      return res.status(401).json({ message: "Invalid or expired token" });
+    if (!token) {
+      return next(
+        new ErrorHandler("Not authenticated. No token provided.", 401)
+      );
     }
-  } else {
-    res.status(401).json({ message: "No token provided" });
+
+    // Verify JWT access token
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_TOKEN);
+
+    // Check Redis session
+    const session = await redis.get(decoded.id);
+    if (!session) {
+      return next(
+        new ErrorHandler("Session expired. Please login again.", 401)
+      );
+    }
+
+    const user = JSON.parse(session);
+    req.user = user;
+
+    next();
+  } catch (err) {
+    return next(new ErrorHandler("Invalid or expired token", 401));
   }
 };
 
-const admin = (req, res, next) => {
-  if (req.user && req.user.role === "Admin") next();
-  else res.status(403).json({ message: "Admin access only" });
+// Role-based access: pass roles like "Admin", "SuperAdmin"
+const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user) return next(new ErrorHandler("Not authenticated", 401));
+
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new ErrorHandler("Access denied: insufficient permission", 403)
+      );
+    }
+
+    next();
+  };
 };
 
-module.exports = { protect, admin };
+// Prebuilt shortcuts for admin / superadmin routes
+const adminOnly = (req, res, next) => authorize("Admin")(req, res, next);
+const superAdminOnly = (req, res, next) =>
+  authorize("SuperAdmin")(req, res, next);
+
+module.exports = {
+  protect,
+  authorize,
+  adminOnly,
+  superAdminOnly,
+};

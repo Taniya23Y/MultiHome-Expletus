@@ -3,6 +3,11 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const dbConnect = require("./config/dbConnect");
 const errorHandler = require("./middleware/errorHandler");
+const userRoutes = require("./routes/user.route");
+const sellerRoutes = require("./routes/seller.route");
+const propertyRoutes = require("./routes/propertyRoutes");
+const redis = require("./config/redis");
+const cookieParser = require("cookie-parser");
 
 // configure dotenv
 dotenv.config();
@@ -12,7 +17,7 @@ const app = express();
 // configure cors
 app.use(
   cors({
-    origin: "http://localhost:5173", // client origin
+    origin: "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
@@ -21,13 +26,11 @@ app.use(
 // Middleware to parse JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// importing user route
-const userRoutes = require("./routes/userRoutes");
-const propertyRoutes = require("./routes/propertyRoutes");
+app.use(cookieParser());
 
 // Use routes
-app.use("/api/users", userRoutes);
+app.use("/api/auth", userRoutes);
+app.use("/api/auth", sellerRoutes);
 app.use("/api/properties", propertyRoutes);
 app.use(errorHandler);
 
@@ -51,6 +54,10 @@ const PORT = process.env.PORT || 7777;
 const startServer = async () => {
   try {
     await dbConnect();
+
+    redis.on("connect", () => console.log("Redis server connected"));
+    redis.on("error", (err) => console.error("Redis error:", err));
+
     app.listen(PORT, () => {
       console.log(`Server is running on http://localhost:${PORT}`);
     });
