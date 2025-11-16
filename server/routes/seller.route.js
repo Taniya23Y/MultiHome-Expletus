@@ -1,13 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const sellerController = require("../controllers/seller.controller");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, authorize } = require("../middleware/auth.middleware");
 const multer = require("multer");
 
-// Setup multer for document uploads
+// multer for document uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/documents/"); // folder to save files
+    cb(null, "uploads/documents/");
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);
@@ -15,27 +15,52 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// ================= Seller Routes ================= //
-
 // Create / Upgrade to seller
-router.post("/create", protect, sellerController.createSellerProfile);
+// Only logged-in users can create a seller profile
+router.post(
+  "/create",
+  protect,
+  authorize("user", "buyer", "tenant", "service-provider"),
+  sellerController.createSellerProfile
+);
 
 // Get seller profile
-router.get("/me", protect, sellerController.getSellerProfile);
+router.get(
+  "/me",
+  protect,
+  authorize("seller"),
+  sellerController.getSellerProfile
+);
 
 // Update seller profile
-router.put("/update", protect, sellerController.updateSellerProfile);
+router.put(
+  "/update",
+  protect,
+  authorize("seller"),
+  sellerController.updateSellerProfile
+);
 
 // Get all properties of the seller
-router.get("/properties", protect, sellerController.getSellerProperties);
+router.get(
+  "/properties",
+  protect,
+  authorize("seller"),
+  sellerController.getSellerProperties
+);
 
 // Get seller stats
-router.get("/stats", protect, sellerController.getSellerStats);
+router.get(
+  "/stats",
+  protect,
+  authorize("seller"),
+  sellerController.getSellerStats
+);
 
 // Upload verification documents
 router.post(
   "/upload-documents",
   protect,
+  authorize("seller"),
   upload.array("documents", 5),
   sellerController.uploadDocuments
 );

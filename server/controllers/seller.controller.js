@@ -1,5 +1,4 @@
 const Seller = require("../models/seller.model");
-const User = require("../models/user.model");
 const Property = require("../models/property.model");
 
 // Create/Upgrade to Seller
@@ -22,6 +21,7 @@ exports.createSellerProfile = async (req, res) => {
       return res.status(400).json({ message: "User is already a seller" });
     }
 
+    // Create seller profile
     const seller = new Seller({
       userId: req.user._id,
       name: req.user.name,
@@ -38,12 +38,25 @@ exports.createSellerProfile = async (req, res) => {
 
     await seller.save();
 
-    // Update user role and linkedProfiles
-    req.user.role = "seller";
+    // Update user role
+    if (!req.user.role.includes("seller")) {
+      req.user.role.push("seller");
+    }
+
+    // checking for linkedProfiles exists
+    if (!req.user.linkedProfiles) {
+      req.user.linkedProfiles = {};
+    }
+
+    // Link seller profile
     req.user.linkedProfiles.sellerId = seller._id;
     await req.user.save();
 
-    res.status(201).json({ message: "Seller profile created", seller });
+    res.status(201).json({
+      message: "Seller profile created successfully",
+      seller,
+      user: req.user,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -104,7 +117,7 @@ exports.getSellerStats = async (req, res) => {
     const propertiesCount = await Property.countDocuments({
       sellerId: seller._id,
     });
-    const totalSales = seller.totalSales; // you can calculate dynamically if needed
+    const totalSales = seller.totalSales || 0;
 
     res.status(200).json({ propertiesCount, totalSales });
   } catch (error) {

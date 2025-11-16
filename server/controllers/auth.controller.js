@@ -6,7 +6,13 @@ const tokenService = require("../services/tokenService");
 const bcrypt = require("bcryptjs");
 const redis = require("../config/redis");
 const { validateRegistration, validateForgot } = require("../utils/validators");
-const errorHandler = require("../middleware/errorHandler");
+
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "Strict",
+  maxAge: 15 * 60 * 1000,
+};
 
 exports.registerUser = async (req, res, next) => {
   try {
@@ -78,6 +84,16 @@ exports.loginUser = async (req, res, next) => {
     // Save session in Redis
     await redis.set(user._id.toString(), JSON.stringify(user), "EX", 604800);
 
+    // Set cookies
+    res.cookie("access_token", accessToken, {
+      ...cookieOptions,
+      maxAge: 15 * 60 * 1000,
+    });
+    res.cookie("refresh_token", refreshToken, {
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
     res.status(200).json({
       success: true,
       access: accessToken,
@@ -91,8 +107,9 @@ exports.loginUser = async (req, res, next) => {
 
 exports.refreshToken = async (req, res, next) => {
   try {
-    const { refresh } = req.body;
-    if (!refresh) return next(new errorHandler("Refresh token required", 400));
+    // const { refresh } = req.body;
+    const refresh = req.cookies.refresh_token;
+    if (!refresh) return next(new ErrorHandler("Refresh token required", 400));
 
     const decoded = tokenService.verifyRefresh(refresh);
     if (!decoded) return next(new ErrorHandler("Invalid refresh token", 401));
@@ -101,8 +118,12 @@ exports.refreshToken = async (req, res, next) => {
     if (!session) return next(new ErrorHandler("Session expired", 401));
 
     const user = JSON.parse(session);
-
     const newAccess = tokenService.generateAccessToken(user);
+
+    res.cookie("access_token", newAccess, {
+      ...cookieOptions,
+      maxAge: 15 * 60 * 1000,
+    });
 
     res.status(200).json({
       success: true,
@@ -179,6 +200,28 @@ exports.resetPassword = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "Password reset successfully",
+    });
+  } catch (err) {
+    next(new ErrorHandler(err.message, 500));
+  }
+};
+
+exports.logoutUser = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
+    // Remove session from Redis
+    await redis.del(req.user._id.toString());
+
+    // Clear cookies
+    res.clearCookie("access_token");
+    res.clearCookie("refresh_token");
+
+    res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
     });
   } catch (err) {
     next(new ErrorHandler(err.message, 500));

@@ -35,14 +35,13 @@ const userSchema = new Schema(
       select: false,
     },
     phone: {
-      type: String,
+      type: [String],
       match: [/^[0-9]{10}$/, "Phone must be 10 digits"],
       index: true,
     },
     role: {
-      type: String,
-      // enum: ["admin", "user", "seller", "renter", "helper", "multiOwner"],
-      default: "user",
+      type: [String],
+      default: ["user"],
       index: true,
     },
 
@@ -50,6 +49,10 @@ const userSchema = new Schema(
       buyerId: { type: mongoose.Schema.Types.ObjectId, ref: "Buyer" },
       sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "Seller" },
       renterId: { type: mongoose.Schema.Types.ObjectId, ref: "Renter" },
+      serviceProviderId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "ServiceProvider",
+      },
     },
 
     isVerified: { type: Boolean, default: false },
@@ -69,9 +72,6 @@ userSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
-
-// sign access token
-// sign refresh token
 
 // compare password
 userSchema.methods.comparePassword = function (enteredPass) {

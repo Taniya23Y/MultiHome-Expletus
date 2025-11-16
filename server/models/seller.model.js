@@ -20,9 +20,17 @@ const sellerSchema = new Schema(
     state: String,
     country: String,
     pincode: String,
+
     location: {
-      type: { type: String, enum: ["Point"] },
-      coordinates: [Number],
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number],
+        default: [0, 0],
+      },
     },
 
     isVerified: { type: Boolean, default: false },
