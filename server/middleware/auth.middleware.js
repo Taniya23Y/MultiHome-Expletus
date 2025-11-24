@@ -41,6 +41,7 @@ const protect = async (req, res, next) => {
     req.user = user;
     next();
   } catch (err) {
+    console.log("Protect middleware error:", err.message);
     return next(new ErrorHandler("Invalid or expired token", 401));
   }
 };

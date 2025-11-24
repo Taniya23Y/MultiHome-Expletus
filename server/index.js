@@ -5,7 +5,7 @@ const dbConnect = require("./config/dbConnect");
 const errorHandler = require("./middleware/errorHandler");
 const userRoutes = require("./routes/user.route");
 const sellerRoutes = require("./routes/seller.route");
-const propertyRoutes = require("./routes/propertyRoutes");
+const propertyRoutes = require("./routes/property.routes");
 const redis = require("./config/redis");
 const cookieParser = require("cookie-parser");
 

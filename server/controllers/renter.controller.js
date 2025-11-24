@@ -1,24 +1,24 @@
+const mongoose = require("mongoose");
 const Renter = require("../models/renter.model");
 const User = require("../models/user.model");
+const Property = require("../models/property.model");
 const ErrorHandler = require("../utils/ErrorHandler");
 
-// Utility → Merge unique roles
-const addRoleIfNotExists = (user, roleName) => {
-  if (!Array.isArray(user.role)) user.role = ["user"];
+// Check if any ID is valid
+const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
-  if (!user.role.includes(roleName)) {
-    user.role.push(roleName);
-  }
+// Only allow selected fields
+const pickAllowedFields = (data, allowedFields) => {
+  const cleanData = {};
+  allowedFields.forEach((field) => {
+    if (data[field] !== undefined) cleanData[field] = data[field];
+  });
+  return cleanData;
 };
 
-/**
- * ------------------------------------------------------
- * CREATE RENTER PROFILE
- * ------------------------------------------------------
- */
-exports.createRenter = async (req, res, next) => {
+exports.createRenterProfile = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user._id.toString();
 
     const { name, email, phone } = req.body;
 
@@ -28,19 +28,28 @@ exports.createRenter = async (req, res, next) => {
       return next(new ErrorHandler("Renter profile already exists", 400));
     }
 
+    // Only allow basic fields
+    const allowedData = pickAllowedFields(req.body, [
+      "name",
+      "phone",
+      "address",
+      "preferences",
+    ]);
+
     const renter = await Renter.create({
       userId,
-      name,
-      email,
-      phone,
+      ...allowedData,
     });
 
     // update roles
-    const user = await User.findById(userId);
-    addRoleIfNotExists(user, "renter");
+    const user = await User.findByIdAndUpdate(userId, {
+      $addToSet: { role: "Renter" },
+      $set: { "linkedProfiles.renterId": renter._id },
+    });
+
     await user.save();
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Renter profile created",
       renter,
@@ -50,72 +59,81 @@ exports.createRenter = async (req, res, next) => {
   }
 };
 
-/**
- * ------------------------------------------------------
- * GET RENTER
- * ------------------------------------------------------
- */
 exports.getRenter = async (req, res, next) => {
   try {
-    const renter = await Renter.findOne({ userId: req.params.id });
+    // const renter = await Renter.findOne({ userId: req.params.id });
+    const renter = await Renter.findOne({ userId: req.user._id });
 
-    if (!renter) return next(new ErrorHandler("Renter not found", 404));
+    if (!renter)
+      return next(new ErrorHandler("Renter profile  not found", 404));
 
-    res.json({ success: true, renter });
+    return res.json({ success: true, renter });
   } catch (err) {
     next(err);
   }
 };
 
-/**
- * ------------------------------------------------------
- * UPDATE RENTER
- * ------------------------------------------------------
- */
 exports.updateRenter = async (req, res, next) => {
   try {
+    const allowedData = pickAllowedFields(req.body, [
+      "name",
+      "phone",
+      "address",
+      "preferences",
+    ]);
+
     const renter = await Renter.findOneAndUpdate(
-      { userId: req.params.id },
-      req.body,
+      // { userId: req.params.id },
+      // req.body,
+      { userId: req.user._id },
+      { $set: allowedData },
       { new: true }
     );
 
-    if (!renter) return next(new ErrorHandler("Renter not found", 404));
+    if (!renter)
+      return next(new ErrorHandler("Renter profile  not found", 404));
 
-    res.json({ success: true, renter });
+    return res.json({ success: true, renter });
   } catch (err) {
     next(err);
   }
 };
 
-/**
- * ------------------------------------------------------
- * DELETE RENTER
- * ------------------------------------------------------
- */
 exports.deleteRenter = async (req, res, next) => {
   try {
-    const renter = await Renter.findOneAndDelete({ userId: req.params.id });
+    // const renter = await Renter.findOneAndDelete({ userId: req.params.id });
+    const renter = await Renter.findOneAndDelete({ userId: req.user._id });
 
-    if (!renter) return next(new ErrorHandler("Renter not found", 404));
+    if (!renter) return next(new ErrorHandler("Renter profile not found", 404));
 
-    res.json({ success: true, message: "Renter deleted" });
+    // Remove renter link + role from user
+    await User.findByIdAndUpdate(req.user._id, {
+      $unset: { "linkedProfiles.renterId": "" },
+      $pull: { role: "Renter" },
+    });
+
+    return res.json({ success: true, message: "Renter deleted" });
   } catch (err) {
     next(err);
   }
 };
 
-/**
- * ------------------------------------------------------
- * SAVE RENTAL PROPERTY
- * ------------------------------------------------------
- */
-exports.saveRental = async (req, res, next) => {
+exports.saveRentalProperty = async (req, res, next) => {
   try {
     const { listingId } = req.body;
+    const userId = req.user._id;
 
-    const renter = await Renter.findOne({ userId: req.params.id });
-    if (!renter) return next(new ErrorHandler("Renter not found", 404));
+    if (!isValidId(listingId))
+      return next(new ErrorHandler("Invalid property ID.", 400));
+
+    const property = await Property.findById(listingId);
+    if (!property) return next(new ErrorHandler("Property not found.", 404));
+
+    const renter = await Renter.findOneAndUpdate(
+      { userId },
+      { $addToSet: { savedRentals: listingId } },
+      { new: true }
+    );
 
     const alreadySaved = renter.savedRentals.some(
       (item) => item.listingId.toString() === listingId
@@ -126,7 +144,7 @@ exports.saveRental = async (req, res, next) => {
       await renter.save();
     }
 
-    res.json({ success: true, savedRentals: renter.savedRentals });
+    return res.json({ success: true, savedRentals: renter.savedRentals });
   } catch (err) {
     next(err);
   }

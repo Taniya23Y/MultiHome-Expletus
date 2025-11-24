@@ -18,6 +18,7 @@ const sendMail = async (options) => {
 
   // Path to template
   const templatePath = path.join(__dirname, "../mails", template);
+  console.log("Trying to load:", templatePath);
 
   // Render EJS template
   const html = await ejs.renderFile(templatePath, data);

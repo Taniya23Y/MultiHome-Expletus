@@ -2,6 +2,7 @@ require("dotenv").config();
 const User = require("../models/user.model");
 const ErrorHandler = require("../utils/ErrorHandler");
 const otpService = require("../services/otpService");
+const emailService = require("../services/otpService");
 const tokenService = require("../services/tokenService");
 const bcrypt = require("bcryptjs");
 const redis = require("../config/redis");
@@ -10,7 +11,9 @@ const { validateRegistration, validateForgot } = require("../utils/validators");
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  sameSite: "Strict",
+  // secure: true,
+  sameSite: "strict",
+  path: "/",
   maxAge: 15 * 60 * 1000,
 };
 
@@ -26,7 +29,7 @@ exports.registerUser = async (req, res, next) => {
 
     const user = await User.create({ name, email, password });
 
-    const otp = await otpService.sendOTP(email);
+    const otp = await otpService.sendOTP(email, name, "register");
 
     res.status(201).json({
       success: true,
@@ -81,7 +84,7 @@ exports.loginUser = async (req, res, next) => {
     const accessToken = tokenService.generateAccessToken(user);
     const refreshToken = tokenService.generateRefreshToken(user);
 
-    // Save session in Redis
+    // Save session in Redis(for protect middleware)
     await redis.set(user._id.toString(), JSON.stringify(user), "EX", 604800);
 
     // Set cookies
@@ -94,10 +97,16 @@ exports.loginUser = async (req, res, next) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
+    // Send welcome email AFTER successful login
+    emailService
+      .sendWelcomeEmail(email, user.name)
+      .catch((err) => console.log(err));
+
     res.status(200).json({
       success: true,
-      access: accessToken,
-      refresh: refreshToken,
+      message: "Login successful",
+      accessToken: accessToken,
+      refreshToken: refreshToken,
       user,
     });
   } catch (err) {
@@ -134,6 +143,25 @@ exports.refreshToken = async (req, res, next) => {
   }
 };
 
+exports.updateAccessToken = async (req, res, next) => {
+  const refresh_token = req.cookies.refresh_token;
+  if (!refresh_token)
+    return next(new ErrorHandler("No refresh token provided", 401));
+
+  const decoded = jwt.verify(refresh_token, process.env.REFRESH_TOKEN_SECRET);
+  const session = await redis.get(decoded.id);
+
+  if (!session)
+    return next(new ErrorHandler("Session expired or invalid", 401));
+
+  const user = JSON.parse(session);
+  const accessToken = GenerateToken(user._id, "5m");
+
+  res.cookie("access_token", accessToken, cookieOptions);
+
+  return res.status(200).json({ message: "Access token updated", accessToken });
+};
+
 exports.forgotPassword = async (req, res, next) => {
   try {
     const error = validateForgot(req.body);
@@ -144,7 +172,7 @@ exports.forgotPassword = async (req, res, next) => {
     const user = await User.findOne({ email });
     if (!user) return next(new ErrorHandler("User not found", 404));
 
-    const otp = await otpService.sendOTP(email);
+    const otp = await otpService.sendOTP(email, user.name, "forgot");
 
     res.status(200).json({
       success: true,
@@ -213,11 +241,11 @@ exports.logoutUser = async (req, res, next) => {
     }
 
     // Remove session from Redis
-    await redis.del(req.user._id.toString());
+    await redis.del(req.user.id || req.user._id.toString());
 
     // Clear cookies
-    res.clearCookie("access_token");
-    res.clearCookie("refresh_token");
+    res.clearCookie("access_token", clearOptions);
+    res.clearCookie("refresh_token", clearOptions);
 
     res.status(200).json({
       success: true,

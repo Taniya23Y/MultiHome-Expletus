@@ -122,6 +122,11 @@ const propertySchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    sellerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Seller",
+      required: true,
+    },
     ownershipType: {
       type: String,
       enum: [

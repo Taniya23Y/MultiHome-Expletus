@@ -24,6 +24,13 @@ const buyerSchema = new Schema(
     profilePic: String,
 
     // --- Buyer Specific Fields ---
+    wishlist: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Property",
+      },
+    ],
+
     savedProperties: [
       {
         listingId: { type: Schema.Types.ObjectId, ref: "Listing" },

@@ -20,7 +20,7 @@ const Home = () => {
       <PopularAreas />
       <SuggestedProperties />
       <AvailableProperties />
-      <PropertyList />
+      {/* <PropertyList /> */}
       <HowItWork />
       <SubscribeNewsletter />
     </div>

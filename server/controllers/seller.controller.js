@@ -34,6 +34,7 @@ exports.createSellerProfile = async (req, res) => {
       country,
       pincode,
       gstNumber,
+      isVerified: req.user.isVerified,
     });
 
     await seller.save();

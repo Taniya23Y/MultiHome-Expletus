@@ -40,20 +40,13 @@ const userSchema = new Schema(
       index: true,
     },
     role: {
-      type: [String],
-      default: ["user"],
+      type: String,
+      default: "user",
       index: true,
     },
 
-    linkedProfiles: {
-      buyerId: { type: mongoose.Schema.Types.ObjectId, ref: "Buyer" },
-      sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "Seller" },
-      renterId: { type: mongoose.Schema.Types.ObjectId, ref: "Renter" },
-      serviceProviderId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "ServiceProvider",
-      },
-    },
+    isBuyer: { type: Boolean, default: true },
+    isRenter: { type: Boolean, default: false },
 
     isVerified: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
