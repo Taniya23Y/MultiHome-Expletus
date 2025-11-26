@@ -1,5 +1,6 @@
+/* eslint-disable no-unused-vars */
 import { apiSlice } from "../api/apiSlice";
-import { setCredentials } from "../auth/authSlice";
+import { logoutState, setCredentials } from "../auth/authSlice";
 
 export const authApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -33,26 +34,36 @@ export const authApi = apiSlice.injectEndpoints({
             setCredentials({
               user: data.user,
               roles: data.roles,
-              token: data.accessToken,
             })
           );
-
-          // store token if backend sends it
-          if (data.accessToken) {
-            localStorage.setItem("token", data.accessToken);
-          }
         } catch (error) {
           console.log("Login error:", error);
         }
       },
     }),
 
-    refreshToken: builder.mutation({
+    refreshToken: builder.query({
       query: () => ({
         url: "/refresh",
         method: "POST",
-        // credentials: "include",
       }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+
+          if (data?.access) {
+            dispatch(
+              setCredentials({
+                accessToken: data.access,
+                user: data.user,
+                roles: data.roles,
+              })
+            );
+          }
+        } catch (err) {
+          dispatch(logoutState());
+        }
+      },
     }),
 
     forgotPassword: builder.mutation({
@@ -84,6 +95,9 @@ export const authApi = apiSlice.injectEndpoints({
         url: "/logout",
         method: "POST",
       }),
+      async onQueryStarted(arg, { dispatch }) {
+        dispatch(logoutState());
+      },
     }),
 
     getProfile: builder.query({
@@ -104,7 +118,7 @@ export const {
   useRegisterUserMutation,
   useVerifyUserMutation,
   useLoginUserMutation,
-  useRefreshTokenMutation,
+  useRefreshTokenQuery,
   useForgotPasswordMutation,
   useVerifyForgotPasswordMutation,
   useResetPasswordMutation,

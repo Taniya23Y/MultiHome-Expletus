@@ -6,7 +6,7 @@ import { assets } from "../../assets/data";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useRegisterUserMutation } from "../../redux/features/auth/authApi";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 const SignUp = () => {
   const navigate = useNavigate();

@@ -5,13 +5,14 @@ import { Provider } from "react-redux";
 import "./index.css";
 import App from "./App.jsx";
 import { store } from "./redux/store.js";
-import { Toaster } from "react-hot-toast";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
       <BrowserRouter>
-        <Toaster position="top-right" />
+        <ToastContainer position="top-right" />
         <App />
       </BrowserRouter>
     </Provider>

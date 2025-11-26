@@ -15,32 +15,26 @@ import VerifyEmail from "./components/Auth/verifyEmail";
 import UserDashboard from "./components/User/UserDashboard";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { setCredentials } from "./redux/features/auth/authSlice";
-import { useRefreshTokenMutation } from "./redux/features/auth/authApi";
+import { logoutState, setCredentials } from "./redux/features/auth/authSlice";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import { useRefreshTokenQuery } from "./redux/features/auth/authApi";
 
 function App() {
   const dispatch = useDispatch();
+
   const location = useLocation();
   const hideNavFooter =
     location.pathname === "/admin" ||
     location.pathname === "/login" ||
     location.pathname === "/signup" ||
     location.pathname === "/verify-user" ||
-    location.pathname === "/user/dashboard";
+    location.pathname === "/profile";
 
-  const token = localStorage.getItem("token");
+  const { data, isSuccess, isError, isLoading } = useRefreshTokenQuery();
 
-  // const { data, isSuccess } = useRefreshTokenQuery(undefined, {
-  //   skip: !token, // only run if token exists
-  // });
-
-  const [refreshToken, { data, isSuccess }] = useRefreshTokenMutation();
-
-  useEffect(() => {
-    if (token) {
-      refreshToken();
-    }
-  }, [token, refreshToken]);
+  // useEffect(() => {
+  //   refreshToken();
+  // }, [refreshToken]);
 
   useEffect(() => {
     if (isSuccess && data) {
@@ -48,15 +42,17 @@ function App() {
         setCredentials({
           user: data.user,
           roles: data.roles,
-          token: data.accessToken,
+          accessToken: data.access,
         })
       );
-
-      if (data.accessToken) {
-        localStorage.setItem("token", data.accessToken);
-      }
     }
-  }, [isSuccess, data, dispatch]);
+
+    if (isError) {
+      dispatch(logoutState());
+    }
+  }, [isSuccess, isError, data, dispatch]);
+
+  if (isLoading) return <div>Loading...</div>;
 
   return (
     <>
@@ -69,8 +65,10 @@ function App() {
         <Route path="/verify-user" element={<VerifyEmail />} />
         <Route path="/login" element={<Login />} />
 
-        <Route path="/user/dashboard" element={<UserDashboard />} />
-        <Route path="/admin" element={<AdminDashboard />} />
+        <Route element={<ProtectedRoute loading={isLoading} />}>
+          <Route path="/profile" element={<UserDashboard />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+        </Route>
 
         <Route path="*" element={<NotFound />} />
       </Routes>

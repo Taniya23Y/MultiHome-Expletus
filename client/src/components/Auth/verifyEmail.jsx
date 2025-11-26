@@ -4,7 +4,7 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { assets } from "../../assets/data";
 import { useVerifyUserMutation } from "../../redux/features/auth/authApi";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 const VerifyEmail = () => {
   const navigate = useNavigate();

@@ -9,19 +9,18 @@ const {
 
 router.post("/register-user", auth.registerUser);
 router.post("/verify-user", auth.verifyUser);
-
 router.post("/login", auth.loginUser);
+
 router.post("/refresh", auth.refreshToken);
 
 router.post("/forgot-password", auth.forgotPassword);
 router.post("/verify-forgot-password", auth.verifyForgotPassword);
 router.post("/reset-forgot-password", auth.resetPassword);
+
 router.post("/logout", protect, auth.logoutUser);
 
 // Protected routes example
-router.get("/profile", protect, (req, res) => {
-  res.json({ success: true, user: req.user });
-});
+router.get("/profile", protect, auth.getMeProfile);
 
 // Admin-only route example
 router.get("/admin/dashboard", protect, adminOnly, (req, res) => {

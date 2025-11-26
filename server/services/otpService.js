@@ -11,52 +11,56 @@ module.exports = {
       await redis.set(`otp:${email}`, otp, "EX", 300);
     }
 
-    if (type === "register") {
-      subject = "Verify Your MultiHome Account";
-      template = "activate-mail.ejs";
-      data = {
-        user: { name },
-        activationCode: otp,
-        logoUrl:
-          "https://res.cloudinary.com/dpywefxsq/image/upload/v1740090498/multihome-logo_eswwo0.png",
-        heroImageUrl:
-          "https://github.com/Taniya23Y/MultiHome-Expletus/blob/main/client/src/assets/images/bg.png",
-      };
-    } else if (type === "forgot") {
-      subject = "Reset Your MultiHome Password";
-      template = "forgot-password.ejs";
-      data = {
-        user: { name },
-        otp,
-        resetUrl: `${process.env.FRONTEND_URL}/reset-password/${otp}`,
-        email,
-        logoUrl:
-          "https://res.cloudinary.com/dpywefxsq/image/upload/v1740090498/multihome-logo_eswwo0.png",
-        heroImageUrl:
-          "https://github.com/Taniya23Y/MultiHome-Expletus/blob/main/client/src/assets/images/bg.png",
-      };
-    } else if (type === "welcome") {
-      // Welcome email AFTER login
-      subject = "Welcome Back to MultiHome!";
-      template = "welcome-mail.ejs";
-      data = {
-        user: { name },
-        dashboardUrl: `${process.env.FRONTEND_URL}/dashboard`,
-        logoUrl:
-          "https://res.cloudinary.com/dpywefxsq/image/upload/v1740090498/multihome-logo_eswwo0.png",
-        heroImageUrl:
-          "https://github.com/Taniya23Y/MultiHome-Expletus/blob/main/client/src/assets/images/bg.png",
-      };
-    } else {
-      throw new Error("Invalid email type");
+    // Choose template
+    switch (type) {
+      case "register":
+        subject = "Verify Your MultiHome Account";
+        template = "activate-mail.ejs";
+        data = {
+          user: { name },
+          activationCode: otp,
+          logoUrl:
+            "https://res.cloudinary.com/dpywefxsq/image/upload/v1740090498/multihome-logo_eswwo0.png",
+          heroImageUrl:
+            "https://github.com/Taniya23Y/MultiHome-Expletus/blob/main/client/src/assets/images/bg.png",
+        };
+        break;
+
+      case "forgot":
+        subject = "Reset Your MultiHome Password";
+        template = "forgot-password-mail.ejs";
+        data = {
+          user: { name },
+          otp,
+          // IMPORTANT: Never send OTP in URL for password reset route!
+          resetUrl: `${process.env.FRONTEND_URL}/reset-password`,
+          email,
+          logoUrl:
+            "https://res.cloudinary.com/dpywefxsq/image/upload/v1740090498/multihome-logo_eswwo0.png",
+          heroImageUrl:
+            "https://github.com/Taniya23Y/MultiHome-Expletus/blob/main/client/src/assets/images/bg.png",
+        };
+        break;
+
+      case "welcome":
+        subject = "Welcome Back to MultiHome!";
+        template = "welcome-mail.ejs";
+        data = {
+          user: { name },
+          dashboardUrl: `${process.env.FRONTEND_URL}/dashboard`,
+          logoUrl:
+            "https://res.cloudinary.com/dpywefxsq/image/upload/v1740090498/multihome-logo_eswwo0.png",
+          heroImageUrl:
+            "https://github.com/Taniya23Y/MultiHome-Expletus/blob/main/client/src/assets/images/bg.png",
+        };
+        break;
+
+      default:
+        throw new Error("Invalid email type");
     }
 
-    await sendEmail({
-      email,
-      subject,
-      template,
-      data,
-    });
+    // Send email
+    await sendEmail({ email, subject, template, data });
 
     return otp;
   },
@@ -70,9 +74,14 @@ module.exports = {
     const storedOtp = await redis.get(`otp:${email}`);
     if (!storedOtp) return false;
 
-    if (storedOtp !== otp) return false;
+    if (storedOtp !== otp.toString()) return false;
 
+    // otp is valid -> delete it from redis
     await redis.del(`otp:${email}`);
+
+    // Reset OTP request counter
+    await redis.del(`otp-req:${email}`);
+
     return true;
   },
 

@@ -6,7 +6,7 @@ import { FaEye, FaEyeSlash, FaEnvelope, FaLock } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { assets } from "../../assets/data";
 import { useLoginUserMutation } from "../../redux/features/auth/authApi";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const navigate = useNavigate();

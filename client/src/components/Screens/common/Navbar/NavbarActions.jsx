@@ -1,7 +1,6 @@
 import { useSelector, useDispatch } from "react-redux";
 import { logoutState } from "../../../../redux/features/auth/authSlice";
 import { useLogoutUserMutation } from "../../../../redux/features/auth/authApi";
-
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
@@ -80,7 +79,7 @@ export default function NavbarActions({ isMenuOpen, setIsMenuOpen }) {
                 Hello, <span className="font-medium">{user?.name}</span>
               </div>
 
-              <Link to="/user/dashboard" onClick={() => setDropdownOpen(false)}>
+              <Link to="/profile" onClick={() => setDropdownOpen(false)}>
                 <div className="px-3 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
                   Dashboard
                 </div>
