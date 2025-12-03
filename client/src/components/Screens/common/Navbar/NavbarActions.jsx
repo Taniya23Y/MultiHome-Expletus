@@ -6,7 +6,8 @@ import { Menu, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
 export default function NavbarActions({ isMenuOpen, setIsMenuOpen }) {
-  const { isLoggedIn, user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
+  const isLoggedIn = Boolean(user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [logoutUser] = useLogoutUserMutation();
@@ -28,7 +29,6 @@ export default function NavbarActions({ isMenuOpen, setIsMenuOpen }) {
     try {
       await logoutUser().unwrap();
       dispatch(logoutState());
-      localStorage.removeItem("token");
       setDropdownOpen(false);
       navigate("/");
     } catch (err) {
@@ -37,7 +37,7 @@ export default function NavbarActions({ isMenuOpen, setIsMenuOpen }) {
   };
 
   return (
-    <div className="flex items-center gap-4 relative">
+    <div className="flex items-center relative">
       {/* Desktop Buttons */}
       {!isLoggedIn && (
         <div className="hidden md:flex gap-2">
@@ -60,12 +60,12 @@ export default function NavbarActions({ isMenuOpen, setIsMenuOpen }) {
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-black font-semibold shadow-sm hover:ring-2 hover:ring-gray-300"
+            className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-black font-semibold cursor-pointer shadow-sm hover:ring-2 hover:ring-gray-300"
           >
             {user?.avatar ? (
               <img
                 src={user.avatar}
-                className="w-full h-full rounded-full object-cover"
+                className="w-full h-full rounded-full object-cover cursor-pointer"
               />
             ) : (
               user?.name?.[0]?.toUpperCase()
@@ -99,7 +99,7 @@ export default function NavbarActions({ isMenuOpen, setIsMenuOpen }) {
       {/* Mobile Menu Hamburger */}
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="md:hidden p-2"
+        className="cursor-pointer md:hidden p-2"
       >
         {isMenuOpen ? <X /> : <Menu />}
       </button>

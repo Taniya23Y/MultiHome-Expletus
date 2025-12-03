@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
-const AreaProperty = ({ properties }) => {
+const FeaturedPropertyListing = ({ properties }) => {
   const sampleProperties = [
     {
       id: 1,
@@ -11,12 +12,28 @@ const AreaProperty = ({ properties }) => {
       area: "1800 sqft",
       type: "3 BHK Apartment",
       price: "₹ 45,00,000",
-      link: "https://example.com/property/1",
       images: [
-        "https://images.unsplash.com/photo-1721815693498-cc28507c0ba2?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=880",
-        "https://plus.unsplash.com/premium_photo-1680382578857-c331ead9ed51?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8a2l0Y2hlbiUyMGltYWdlc3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=600",
-        "https://plus.unsplash.com/premium_photo-1661874810454-4405e764b706?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDR8fHxlbnwwfHx8fHw%3D&auto=format&fit=crop&q=60&w=600",
-        "https://media.istockphoto.com/id/2224342823/photo/view-of-the-orangery-with-a-round-roof-in-the-royal-botanic-garden-of-sri-lanka.webp?a=1&b=1&s=612x612&w=0&k=20&c=NsPzG0IqMPIGoLG1T6Xgc-IO98SKHqE4ygwvgbJp7VU=",
+        {
+          title: "Modern House",
+          desc: "Spacious house with wooden interior.",
+          url: "https://images.unsplash.com/photo-1721815693498-cc28507c0ba2?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=880",
+        },
+        {
+          title: "Kitchen",
+          desc: "Modular kitchen with premium fittings.",
+          url: "https://plus.unsplash.com/premium_photo-1680382578857-c331ead9ed51?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8a2l0Y2hlbiUyMGltYWdlc3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=600",
+        },
+
+        {
+          title: "Bedroom",
+          desc: "Cozy bedroom with soft lighting.",
+          url: "https://plus.unsplash.com/premium_photo-1661874810454-4405e764b706?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDR8fHxlbnwwfHx8fHw%3D&auto=format&fit=crop&q=60&w=600",
+        },
+        {
+          title: "Garden",
+          desc: "Cozy greenly garden with soft lighting.",
+          url: "https://media.istockphoto.com/id/2224342823/photo/view-of-the-orangery-with-a-round-roof-in-the-royal-botanic-garden-of-sri-lanka.webp?a=1&b=1&s=612x612&w=0&k=20&c=NsPzG0IqMPIGoLG1T6Xgc-IO98SKHqE4ygwvgbJp7VU=",
+        },
       ],
     },
     {
@@ -27,12 +44,27 @@ const AreaProperty = ({ properties }) => {
       area: "1200 sqft",
       type: "2 BHK Apartment",
       price: "₹ 28,00,000",
-      link: "https://example.com/property/2",
       images: [
-        "https://media.istockphoto.com/id/656057742/photo/3d-rendering-black-loft-modern-house.jpg?s=612x612&w=0&k=20&c=P_ekX2f0a40uVUWaOJp3ds_zPp1AxGzgR5sbT4uKu5U=",
-        "https://media.istockphoto.com/id/1456467041/photo/beautiful-kitchen-in-new-farmhouse-style-luxury-home-with-island-pendant-lights-and-hardwood.webp?a=1&b=1&s=612x612&w=0&k=20&c=QHbU4O3aJU-L6FiFx1eyb_Fa-sTUKfcMHx0o0ao1uVE=",
-        "https://plus.unsplash.com/premium_photo-1746471641369-5ee2e0ccfff5?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDE0fHx8ZW58MHx8fHx8&auto=format&fit=crop&q=60&w=600",
-        "https://media.istockphoto.com/id/2160382184/photo/efficient-car-park-interior-design-ideas-for-a-functional-and-organized-parking-lot.webp?a=1&b=1&s=612x612&w=0&k=20&c=8kt_lLPBp2cRn4yX-JFdpNsIJYKBzH9MwYK9VmfdRZM=",
+        {
+          title: "Modern House",
+          desc: "Spacious house with wooden interior.",
+          url: "https://media.istockphoto.com/id/656057742/photo/3d-rendering-black-loft-modern-house.jpg?s=612x612&w=0&k=20&c=P_ekX2f0a40uVUWaOJp3ds_zPp1AxGzgR5sbT4uKu5U=",
+        },
+        {
+          title: "Kitchen",
+          desc: "Modular kitchen with premium fittings.",
+          url: "https://media.istockphoto.com/id/1456467041/photo/beautiful-kitchen-in-new-farmhouse-style-luxury-home-with-island-pendant-lights-and-hardwood.webp?a=1&b=1&s=612x612&w=0&k=20&c=QHbU4O3aJU-L6FiFx1eyb_Fa-sTUKfcMHx0o0ao1uVE=",
+        },
+        {
+          title: "Bedroom",
+          desc: "Modular Master bedroom with premium fittings.",
+          url: "https://plus.unsplash.com/premium_photo-1746471641369-5ee2e0ccfff5?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDE0fHx8ZW58MHx8fHx8&auto=format&fit=crop&q=60&w=600",
+        },
+        {
+          title: "Parking",
+          desc: "Private covered parking space.",
+          url: "https://media.istockphoto.com/id/2160382184/photo/efficient-car-park-interior-design-ideas-for-a-functional-and-organized-parking-lot.webp?a=1&b=1&s=612x612&w=0&k=20&c=8kt_lLPBp2cRn4yX-JFdpNsIJYKBzH9MwYK9VmfdRZM=",
+        },
       ],
     },
     {
@@ -43,12 +75,27 @@ const AreaProperty = ({ properties }) => {
       area: "3500 sqft",
       type: "3 BHK Apartment",
       price: "₹ 1.2 Cr",
-      link: "https://example.com/property/3",
       images: [
-        "https://media.istockphoto.com/id/656057834/photo/3d-rendering-black-minimal-wood-and-black-house.jpg?s=612x612&w=0&k=20&c=bhl5XSuxNzfkPSFTM6M2K4iRL63sFs7BeerGmwDcNNM=",
-        "https://plus.unsplash.com/premium_photo-1680382578871-32ce66f9ae25?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1pbi1zYW1lLXNlcmllc3wxfHx8ZW58MHx8fHx8&auto=format&fit=crop&q=60&w=800",
-        "https://plus.unsplash.com/premium_photo-1733353309577-ebe815f18392?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDIxfHx8ZW58MHx8fHx8&auto=format&fit=crop&q=60&w=600",
-        "https://media.istockphoto.com/id/1729780209/photo/underground-pipelines.jpg?s=612x612&w=0&k=20&c=G4e8t0VVvaLODCzDZGdfdVi1hgqSWjVfUZfFfv0u2sM=",
+        {
+          title: "Modern Hall",
+          desc: "Spacious hall with wooden interior.",
+          url: "https://media.istockphoto.com/id/656057834/photo/3d-rendering-black-minimal-wood-and-black-house.jpg?s=612x612&w=0&k=20&c=bhl5XSuxNzfkPSFTM6M2K4iRL63sFs7BeerGmwDcNNM=",
+        },
+        {
+          title: "Kitchen",
+          desc: "Modular kitchen with premium fittings.",
+          url: "https://plus.unsplash.com/premium_photo-1680382578871-32ce66f9ae25?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1pbi1zYW1lLXNlcmllc3wxfHx8ZW58MHx8fHx8&auto=format&fit=crop&q=60&w=800",
+        },
+        {
+          title: "Bedroom",
+          desc: "Cozy bedroom with soft lighting.",
+          url: "https://plus.unsplash.com/premium_photo-1733353309577-ebe815f18392?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDIxfHx8ZW58MHx8fHx8&auto=format&fit=crop&q=60&w=600",
+        },
+        {
+          title: "Parking",
+          desc: "Private covered parking space.",
+          url: "https://media.istockphoto.com/id/1729780209/photo/underground-pipelines.jpg?s=612x612&w=0&k=20&c=G4e8t0VVvaLODCzDZGdfdVi1hgqSWjVfUZfFfv0u2sM=",
+        },
       ],
     },
     {
@@ -60,12 +107,27 @@ const AreaProperty = ({ properties }) => {
       area: "5000 sqft",
       type: "4 BHK Apartment",
       price: "₹ 2.3 Cr",
-      link: "https://example.com/property/4",
       images: [
-        "https://plus.unsplash.com/premium_photo-1747846129339-4ccad287c92a?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDh8fHxlbnwwfHx8fHw%3D&auto=format&fit=crop&q=60&w=600",
-        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
-        "https://plus.unsplash.com/premium_photo-1661963667668-f53a412a5922?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDJ8fHxlbnwwfHx8fHw%3D&auto=format&fit=crop&q=60&w=600",
-        "https://plus.unsplash.com/premium_photo-1661963211494-558f6f7aa721?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDF8fHxlbnwwfHx8fHw%3D&auto=format&fit=crop&q=60&w=600",
+        {
+          title: "Modern Hall",
+          desc: "Spacious hall with wooden interior.",
+          url: "https://plus.unsplash.com/premium_photo-1747846129339-4ccad287c92a?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDh8fHxlbnwwfHx8fHw%3D&auto=format&fit=crop&q=60&w=600",
+        },
+        {
+          title: "Living room",
+          desc: "Cozy living room with soft lighting.",
+          url: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+        },
+        {
+          title: "Kitchen",
+          desc: "Modular kitchen with premium fittings.",
+          url: "https://plus.unsplash.com/premium_photo-1661963667668-f53a412a5922?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDJ8fHxlbnwwfHx8fHw%3D&auto=format&fit=crop&q=60&w=600",
+        },
+        {
+          title: "Bedroom",
+          desc: "Cozy bedroom with soft lighting.",
+          url: "https://plus.unsplash.com/premium_photo-1661963211494-558f6f7aa721?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDF8fHxlbnwwfHx8fHw%3D&auto=format&fit=crop&q=60&w=600",
+        },
       ],
     },
     {
@@ -77,11 +139,22 @@ const AreaProperty = ({ properties }) => {
       area: "1500 sqft",
       type: "3 BHK Apartment",
       price: "₹ 85,00,000",
-      link: "https://example.com/property/5",
       images: [
-        "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
-        "https://plus.unsplash.com/premium_photo-1683141179507-734e6157ddba?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDZ8fHxlbnwwfHx8fHw%3D&auto=format&fit=crop&q=60&w=600",
-        "https://plus.unsplash.com/premium_photo-1661963058256-5358560f4c6c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmVkcm9vbSUyMGltYWdlc3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=600",
+        {
+          title: "Modern Hall",
+          desc: "Spacious hall with wooden interior.",
+          url: "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+        },
+        {
+          title: "Kitchen",
+          desc: "Modular kitchen with premium fittings.",
+          url: "https://plus.unsplash.com/premium_photo-1683141179507-734e6157ddba?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDZ8fHxlbnwwfHx8fHw%3D&auto=format&fit=crop&q=60&w=600",
+        },
+        {
+          title: "Bedroom",
+          desc: "Cozy bedroom with soft lighting.",
+          url: "https://plus.unsplash.com/premium_photo-1661963058256-5358560f4c6c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmVkcm9vbSUyMGltYWdlc3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=600",
+        },
       ],
     },
     {
@@ -92,11 +165,22 @@ const AreaProperty = ({ properties }) => {
       area: "2200 sqft",
       type: "2 BHK Apartment",
       price: "₹ 1.5 Cr",
-      link: "https://example.com/property/6",
       images: [
-        "https://media.istockphoto.com/id/2223117892/photo/modern-two-story-villa-with-black-slate-stone-facade-and-spacious-yard-in-autumn.jpg?s=612x612&w=0&k=20&c=Zz1Qxh0AicFVTU3-aB4D8vJ0dTGo89ICZSc5kQ50jWM=",
-        "https://plus.unsplash.com/premium_photo-1661876219991-f9482980946a?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDl8fHxlbnwwfHx8fHw%3D&auto=format&fit=crop&q=60&w=600",
-        "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1200&q=80",
+        {
+          title: "Modern Hall",
+          desc: "Spacious hall with wooden interior.",
+          url: "https://media.istockphoto.com/id/2223117892/photo/modern-two-story-villa-with-black-slate-stone-facade-and-spacious-yard-in-autumn.jpg?s=612x612&w=0&k=20&c=Zz1Qxh0AicFVTU3-aB4D8vJ0dTGo89ICZSc5kQ50jWM=",
+        },
+        {
+          title: "Kitchen",
+          desc: "Modular kitchen with premium fittings.",
+          url: "https://plus.unsplash.com/premium_photo-1661876219991-f9482980946a?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDl8fHxlbnwwfHx8fHw%3D&auto=format&fit=crop&q=60&w=600",
+        },
+        {
+          title: "Bedroom",
+          desc: "Cozy bedroom with soft lighting.",
+          url: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1200&q=80",
+        },
       ],
     },
   ];
@@ -179,10 +263,10 @@ const AreaProperty = ({ properties }) => {
   );
 };
 
-export default AreaProperty;
+export default FeaturedPropertyListing;
 
 const PropertyCard = ({ property }) => {
-  const { images, name, description, city, area, type, price, link } = property;
+  const { images, name, description, city, area, type, price } = property;
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -211,23 +295,26 @@ const PropertyCard = ({ property }) => {
         <div className="text-xl md:text-2xl font-semibold text-gray-900 mt-1">
           {price}
         </div>
-        <a
-          href={link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block mt-4 bg-gradient-to-tr from-blue-500 to-purple-500 text-white px-5 py-2 rounded-full font-medium shadow hover:shadow-lg hover:scale-105 transition-all"
-        >
-          View Details
-        </a>
+        <Link to={`/property-detail/${property.id}`}>
+          <div className="inline-block mt-4 bg-gradient-to-tr from-blue-500 to-purple-500 text-white px-5 py-2 rounded-full font-medium shadow hover:shadow-lg hover:scale-105 transition-all">
+            View Details
+          </div>
+        </Link>
       </div>
 
       {/* Right Side */}
       <div className="relative flex-2 w-full md:w-1/2">
         <img
-          src={images[index]}
-          alt={name}
+          src={images[index].url}
+          alt={images[index].title}
           className="rounded-2xl w-full h-56 sm:h-72 md:h-80 lg:h-[350px] object-cover shadow-md transition-all duration-700"
         />
+        {/* IMAGE HEADING + DESCRIPTION */}
+        <div className="absolute bottom-9 left-4 text-white drop-shadow-lg">
+          <h4 className="font-semibold text-lg">{images[index].title}</h4>
+          <p className="text-sm opacity-90">{images[index].desc}</p>
+        </div>
+
         {/* Dots */}
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 bg-white/70 px-3 py-1 rounded-full backdrop-blur-sm">
           {images.map((_, i) => (

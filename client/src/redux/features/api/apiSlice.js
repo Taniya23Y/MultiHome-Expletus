@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { Mutex } from "async-mutex";
 import { setCredentials, logoutState } from "../auth/authSlice";
@@ -7,11 +8,10 @@ const mutex = new Mutex();
 // Normal baseQuery
 const baseQuery = fetchBaseQuery({
   baseUrl: "http://localhost:5000/api/auth",
-  credentials: "include", // Send cookies
+  credentials: "include",
 });
 
 const baseQueryWithReauth = async (args, api, extraOptions) => {
-  // Wait if another refresh is running
   await mutex.waitForUnlock();
 
   // First request attempt
@@ -35,7 +35,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
           api.dispatch(
             setCredentials({
               accessToken: refreshResult.data.accessToken,
-              user: api.getState().auth.user, // keep user
+              user: api.getState().auth.user,
               roles: api.getState().auth.roles,
             })
           );

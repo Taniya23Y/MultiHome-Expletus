@@ -14,7 +14,7 @@ dist-ssr
 *.local
 personal.md
 structure.md
-findLength.js
+findLength.md
 steps.md
 
 # Editor directories and files

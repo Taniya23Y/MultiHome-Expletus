@@ -11,7 +11,7 @@ const redis = require("../config/redis");
 const { validateRegistration, validateForgot } = require("../utils/validators");
 
 const ACCESS_TTL = 15 * 60;
-const REFRESH_TTL = 7 * 24 * 60 * 60;
+const REFRESH_TTL = 7 * 24 * 60 * 60; //7
 const SESSION_TTL = REFRESH_TTL;
 const PWRESET_TTL = 15 * 60;
 
@@ -107,8 +107,8 @@ exports.loginUser = async (req, res, next) => {
 
     const sid = makeSid();
 
-    const accessToken = tokenService.generateAccessToken(user, sid);
-    const refreshToken = tokenService.generateRefreshToken(user, sid);
+    const accessToken = tokenService.generateUserAccessToken(user, sid);
+    const refreshToken = tokenService.generateUserRefreshToken(user, sid);
 
     await setTokensInRedis(user._id.toString(), accessToken, refreshToken);
     await setSessionInRedis(user, sid);
@@ -144,7 +144,7 @@ exports.refreshToken = async (req, res, next) => {
 
     let decoded;
     try {
-      decoded = tokenService.verifyRefresh(refresh);
+      decoded = tokenService.verifyUserRefresh(refresh);
     } catch (e) {
       return next(new ErrorHandler("Invalid or expired refresh token", 401));
     }
@@ -165,7 +165,7 @@ exports.refreshToken = async (req, res, next) => {
     const user = await User.findById(userId);
     if (!user) return next(new ErrorHandler("User no longer exists", 404));
 
-    const newAccess = tokenService.generateAccessToken(user, session.sid);
+    const newAccess = tokenService.generateUserAccessToken(user, session.sid);
 
     await redis.set(`access:${userId}`, newAccess, "EX", ACCESS_TTL);
 

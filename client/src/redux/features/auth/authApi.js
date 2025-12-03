@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { apiSlice } from "../api/apiSlice";
 import { logoutState, setCredentials } from "../auth/authSlice";
 
@@ -46,21 +45,20 @@ export const authApi = apiSlice.injectEndpoints({
       query: () => ({
         url: "/refresh",
         method: "POST",
+        credentials: "include",
       }),
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-
-          if (data?.access) {
-            dispatch(
-              setCredentials({
-                accessToken: data.access,
-                user: data.user,
-                roles: data.roles,
-              })
-            );
-          }
+          dispatch(
+            setCredentials({
+              accessToken: data.access,
+              user: data.user,
+              roles: data.roles,
+            })
+          );
         } catch (err) {
+          console.warn("User refresh failed:", err);
           dispatch(logoutState());
         }
       },

@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
-  Laptop,
   Users,
   BarChart3,
   Settings,
@@ -22,9 +21,9 @@ import { assets } from "../../../../assets/data";
 import NavbarDesktop from "./NavbarDesktop";
 import NavbarActions from "./NavbarActions";
 import NavbarMobile from "./NavbarMobile";
+import Button from "../../../UI/Button";
 
 export default function Navbar() {
-  // -------------------- States --------------------
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeMegaMenu, setActiveMegaMenu] = useState(null);
   const [indicatorStyle, setIndicatorStyle] = useState({
@@ -36,12 +35,10 @@ export default function Navbar() {
   const [cityOpen, setCityOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  // -------------------- Refs --------------------
   const menuTimeoutRef = useRef(null);
   const navRefs = useRef({});
   const megaMenuRef = useRef(null);
 
-  // -------------------- Scroll Effect --------------------
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
@@ -51,7 +48,6 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // -------------------- Mega Menu Data --------------------
   const megaMenus = {
     buyer: {
       title: "For Buyer",
@@ -297,40 +293,35 @@ export default function Navbar() {
     },
   };
 
-  // -------------------- JSX Layout --------------------
   return (
     <header
       className={`fixed top-0 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 
-      bg-white
-      ${
-        scrolled
-          ? "rounded-2xl w-[99%] px-1 shadow-lg"
-          : "w-full px-0 shadow-lg"
-      }
-    `}
+    bg-white
+    ${scrolled ? "rounded-2xl w-[99%] px-1 shadow-lg" : "w-full px-0 shadow-lg"}
+  `}
     >
       {/* Desktop Navbar */}
       <div className="max-container flex h-16 items-center justify-between px-4 md:px-8">
-        {/* Left Section */}
-        <div className="flex items-center gap-6">
+        {/* LEFT SECTION */}
+        <div className="flex items-center gap-2">
           <Logo />
 
           {/* City Selector */}
           <div className="relative">
             <button
               onClick={() => setCityOpen(!cityOpen)}
-              className="flex items-center gap-1 hover:text-[#7FC68A]"
+              className="flex items-center gap-1 cursor-pointer hover:text-black font-medium"
             >
               Indore <ChevronDown className="w-4 h-4" />
             </button>
 
             {cityOpen && (
-              <div className="absolute left-0 mt-2 bg-white shadow-md rounded-lg w-36 p-2 z-100">
+              <div className="absolute left-0 mt-2 bg-white shadow-md rounded-lg w-36 p-2 z-[9999]">
                 {["Vijay Nagar", "LIG", "Bhanwarkuan", "Silicon City"].map(
                   (city) => (
                     <button
                       key={city}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-md"
+                      className="w-full text-left px-3 py-2 cursor-pointer hover:bg-black hover:text-white rounded-md text-sm"
                       onClick={() => setCityOpen(false)}
                     >
                       {city}
@@ -341,6 +332,7 @@ export default function Navbar() {
             )}
           </div>
 
+          {/* Desktop Menu */}
           <NavbarDesktop
             activeMegaMenu={activeMegaMenu}
             setActiveMegaMenu={setActiveMegaMenu}
@@ -354,7 +346,24 @@ export default function Navbar() {
             megaMenus={megaMenus}
           />
         </div>
-        <NavbarActions isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+
+        {/* RIGHT SECTION */}
+        <div className="flex items-center gap-2">
+          <Button
+            label="Become a Seller"
+            variant="outline"
+            size="sm"
+            rounded="xl"
+            href="/become-a-seller"
+            hideTextOnMobile={true}
+            hideIconOnMobile={false}
+          />
+
+          <NavbarActions
+            isMenuOpen={isMenuOpen}
+            setIsMenuOpen={setIsMenuOpen}
+          />
+        </div>
       </div>
 
       {/* Mobile Navbar */}

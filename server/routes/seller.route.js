@@ -1,67 +1,61 @@
 const express = require("express");
 const router = express.Router();
 const sellerController = require("../controllers/seller.controller");
-const { protect, authorize } = require("../middleware/auth.middleware");
-const multer = require("multer");
+const {
+  protect,
+  authorize,
+  sellerAuthorize,
+} = require("../middleware/auth.middleware");
 
-// multer for document uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/documents/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-const upload = multer({ storage });
-
-// Create / Upgrade to seller
-// Only logged-in users can create a seller profile
 router.post(
-  "/create",
+  "/seller-create",
   protect,
   authorize("user", "buyer", "tenant", "service-provider"),
   sellerController.createSellerProfile
 );
+router.post("/send-phone-otp", sellerController.sendPhoneOTP);
+router.post("/verify-phone-otp", sellerController.verifyPhoneOTP);
+router.post("/login", sellerController.sellerLogin);
+router.post("/seller-refresh", sellerController.sellerRefreshToken);
 
-// Get seller profile
+// Get Seller Profile
 router.get(
-  "/me",
+  "/profile",
   protect,
-  authorize("seller"),
+  sellerAuthorize(),
   sellerController.getSellerProfile
 );
+router.get("/public/:sellerId", sellerController.getSellerPublicProfile);
 
-// Update seller profile
+// Update Seller Profile
 router.put(
   "/update",
   protect,
-  authorize("seller"),
+  sellerAuthorize(),
   sellerController.updateSellerProfile
 );
 
-// Get all properties of the seller
+// Get Seller Properties
 router.get(
   "/properties",
   protect,
-  authorize("seller"),
+  sellerAuthorize(),
   sellerController.getSellerProperties
 );
 
-// Get seller stats
+// Seller Dashboard Stats (sales, properties, etc.)
 router.get(
   "/stats",
   protect,
-  authorize("seller"),
+  sellerAuthorize(),
   sellerController.getSellerStats
 );
 
-// Upload verification documents
+// Upload KYC / Verification Documents
 router.post(
   "/upload-documents",
   protect,
-  authorize("seller"),
-  upload.array("documents", 5),
+  sellerAuthorize(),
   sellerController.uploadDocuments
 );
 
