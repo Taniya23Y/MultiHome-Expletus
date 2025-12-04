@@ -61,7 +61,6 @@ const Login = () => {
 
                 resetForm();
 
-                // navigate("/user/dashboard");
                 navigate("/");
               } catch (error) {
                 toast.error(error?.data?.message || "Invalid credentials!");
@@ -119,7 +118,7 @@ const Login = () => {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 rounded-lg font-semibold hover:opacity-90 transition duration-200 text-sm"
+                  className="w-full cursor-pointer bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 rounded-lg font-semibold hover:opacity-90 transition duration-200 text-sm"
                 >
                   {isLoading ? "Logging in..." : "Login"}
                 </button>

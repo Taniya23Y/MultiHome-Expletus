@@ -16,11 +16,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { assets } from "../../assets/data";
 import { FaMapPin } from "react-icons/fa6";
-import { useCreateSellerMutation } from "../../redux/features/seller/sellerApi";
+import {
+  useCreateSellerMutation,
+  useSendSellerOTPMutation,
+} from "../../redux/features/seller/sellerApi";
 
 const SellerCreation = () => {
   const navigate = useNavigate();
   const [createSeller, { isLoading }] = useCreateSellerMutation();
+  const [sendOtp] = useSendSellerOTPMutation();
   const [showPassword, setShowPassword] = useState(false);
 
   const SellerSchema = Yup.object().shape({
@@ -84,6 +88,8 @@ const SellerCreation = () => {
               try {
                 const res = await createSeller(values).unwrap();
                 toast.success(res.message);
+                await sendOtp({ phone: values.phone });
+
                 navigate("/verify-phone-otp", {
                   state: { phone: values.phone },
                 });
@@ -283,7 +289,7 @@ const SellerCreation = () => {
           </Formik>
 
           <p className="text-center text-sm mt-4">
-            Changed your mind?{" "}
+            Already have an account?{" "}
             <Link
               to="/"
               className="text-purple-500 cursor-pointer hover:underline"

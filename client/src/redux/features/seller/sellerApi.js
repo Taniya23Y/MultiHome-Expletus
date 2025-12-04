@@ -8,46 +8,43 @@ export const sellerApi = createApi({
     credentials: "include",
   }),
   tagTypes: ["Seller"],
+
   endpoints: (builder) => ({
     createSeller: builder.mutation({
-      query: (data) => ({
+      query: (body) => ({
         url: "/seller-create",
         method: "POST",
-        body: data,
-        credentials: "include",
+        body,
       }),
     }),
 
     sendSellerOTP: builder.mutation({
-      query: (data) => ({
+      query: (body) => ({
         url: "/send-phone-otp",
         method: "POST",
-        body: data,
-        credentials: "include",
+        body,
       }),
     }),
 
     verifySellerOTP: builder.mutation({
-      query: (data) => ({
+      query: (body) => ({
         url: "/verify-phone-otp",
         method: "POST",
-        body: data,
-        credentials: "include",
+        body,
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
         const { data } = await queryFulfilled;
         dispatch(setSellerCredentials(data.seller));
       },
     }),
 
     sellerLogin: builder.mutation({
-      query: (data) => ({
-        url: "/seller-login",
+      query: (body) => ({
+        url: "/login",
         method: "POST",
-        body: data,
-        credentials: "include",
+        body,
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
         const { data } = await queryFulfilled;
         dispatch(setSellerCredentials(data.seller));
       },
@@ -57,35 +54,28 @@ export const sellerApi = createApi({
       query: () => ({
         url: "/seller-refresh",
         method: "POST",
-        credentials: "include",
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
           dispatch(setSellerCredentials(data.seller));
-        } catch (err) {
-          // Important: Don't throw, just reset seller state
-          console.warn("Seller refresh failed:", err);
+        } catch {
           dispatch(sellerLogoutState());
         }
       },
     }),
 
     sellerProfile: builder.query({
-      query: () => ({
-        url: "/seller-profile",
-        method: "GET",
-        credentials: "include",
-      }),
+      query: () => "/profile",
+      providesTags: ["Seller"],
     }),
 
     sellerLogout: builder.mutation({
       query: () => ({
-        url: "/seller/logout",
+        url: "/logout",
         method: "POST",
-        credentials: "include",
       }),
-      async onQueryStarted(arg, { dispatch }) {
+      async onQueryStarted(_, { dispatch }) {
         dispatch(sellerLogoutState());
       },
     }),
@@ -97,7 +87,7 @@ export const {
   useSendSellerOTPMutation,
   useVerifySellerOTPMutation,
   useSellerLoginMutation,
-  useSellerProfileQuery,
   useSellerRefreshQuery,
+  useSellerProfileQuery,
   useSellerLogoutMutation,
 } = sellerApi;

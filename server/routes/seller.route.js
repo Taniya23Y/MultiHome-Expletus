@@ -7,43 +7,43 @@ const {
   sellerAuthorize,
 } = require("../middleware/auth.middleware");
 
-router.post(
-  "/seller-create",
-  protect,
-  authorize("user", "buyer", "tenant", "service-provider"),
-  sellerController.createSellerProfile
-);
-router.post("/send-phone-otp", sellerController.sendPhoneOTP);
-router.post("/verify-phone-otp", sellerController.verifyPhoneOTP);
-router.post("/login", sellerController.sellerLogin);
-router.post("/seller-refresh", sellerController.sellerRefreshToken);
+router.post("/register", protect, sellerController.createSeller);
 
-// Get Seller Profile
+router.post("/send-otp", sellerController.sendPhoneOTP);
+router.post("/verify-otp", sellerController.verifyPhoneOTP);
+router.post("/login", sellerController.sellerLogin);
+
+router.get("/seller-refresh", sellerController.sellerRefreshToken);
+
+// router.post(
+//   "/logout",
+//   protect,
+//   sellerAuthorize(),
+//   sellerController.logoutSeller
+// );
+
 router.get(
   "/profile",
   protect,
   sellerAuthorize(),
   sellerController.getSellerProfile
 );
-router.get("/public/:sellerId", sellerController.getSellerPublicProfile);
-
-// Update Seller Profile
 router.put(
-  "/update",
+  "/update-profile",
   protect,
   sellerAuthorize(),
   sellerController.updateSellerProfile
 );
 
-// Get Seller Properties
-router.get(
-  "/properties",
+router.post(
+  "/create-shop",
   protect,
   sellerAuthorize(),
-  sellerController.getSellerProperties
+  sellerController.createShop
 );
 
-// Seller Dashboard Stats (sales, properties, etc.)
+router.get("/shop/:id", sellerController.getSellerPublicProfile);
+
 router.get(
   "/stats",
   protect,
@@ -51,12 +51,32 @@ router.get(
   sellerController.getSellerStats
 );
 
-// Upload KYC / Verification Documents
-router.post(
-  "/upload-documents",
+router.get(
+  "/properties",
   protect,
   sellerAuthorize(),
-  sellerController.uploadDocuments
+  sellerController.getSellerProperties
+);
+
+router.post(
+  "/bank/create",
+  protect,
+  sellerAuthorize(),
+  sellerController.createBankAccount
+);
+
+router.post(
+  "/bank/upload-docs",
+  protect,
+  sellerAuthorize(),
+  sellerController.submitBankDocuments
+);
+
+router.post(
+  "/bank/verify",
+  protect,
+  sellerAuthorize(),
+  sellerController.verifyBankAccount
 );
 
 module.exports = router;

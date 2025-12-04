@@ -100,7 +100,7 @@ const VerifyEmail = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 rounded-lg font-semibold hover:opacity-90 transition duration-200 text-sm"
+                  className="w-full cursor-pointer bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 rounded-lg font-semibold hover:opacity-90 transition duration-200 text-sm"
                 >
                   {isLoading ? "Verifying..." : "Verify OTP"}
                 </button>
@@ -111,7 +111,7 @@ const VerifyEmail = () => {
           {/* Resend Link */}
           <p className="text-center text-sm mt-5 text-gray-500">
             Didn't receive code?{" "}
-            <button className="text-blue-600 font-medium hover:underline">
+            <button className="text-blue-600 font-medium cursor-pointer hover:underline">
               Resend OTP
             </button>
           </p>

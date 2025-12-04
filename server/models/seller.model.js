@@ -54,6 +54,15 @@ const sellerSchema = new Schema(
     isVerified: { type: Boolean, default: false },
     documents: [String],
 
+    shop: {
+      type: Schema.Types.ObjectId,
+      ref: "RealEstateShop",
+      default: null,
+    },
+    onboardingStep: {
+      type: Number,
+      default: 1,
+    },
     ratings: { type: Number, default: 0 },
     reviews: [
       {

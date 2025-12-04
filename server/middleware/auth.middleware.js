@@ -16,9 +16,6 @@ const cookieOptions = {
 
 const protect = async (req, res, next) => {
   try {
-    // ================================
-    // Read tokens
-    // ================================
     const userAccess = req.cookies?.access_token;
     const userRefresh = req.cookies?.refresh_token;
 
@@ -28,9 +25,6 @@ const protect = async (req, res, next) => {
     let decoded = null;
     let isSeller = false;
 
-    // ================================================
-    // 1️⃣ ACCESS TOKEN CHECK — TRY SELLER FIRST
-    // ================================================
     if (sellerAccess) {
       try {
         decoded = tokenService.verifySellerAccess(sellerAccess);
@@ -45,18 +39,12 @@ const protect = async (req, res, next) => {
       } catch (_) {}
     }
 
-    // ==================================================================
-    // 2️⃣ IF ACCESS TOKEN INVALID — TRY REFRESH TOKEN (SELLER FIRST)
-    // ==================================================================
     if (!decoded) {
       // No valid refresh token
       if (!sellerRefresh && !userRefresh) {
         return next(new ErrorHandler("Session expired", 401));
       }
 
-      // -----------------------------
-      // TRY SELLER REFRESH
-      // -----------------------------
       if (sellerRefresh) {
         try {
           const refDecoded = tokenService.verifySellerRefresh(sellerRefresh);
@@ -85,9 +73,6 @@ const protect = async (req, res, next) => {
         } catch (_) {}
       }
 
-      // -----------------------------
-      // TRY USER REFRESH
-      // -----------------------------
       if (!decoded && userRefresh) {
         try {
           const refDecoded = tokenService.verifyUserRefresh(userRefresh);
@@ -120,9 +105,6 @@ const protect = async (req, res, next) => {
         return next(new ErrorHandler("Invalid or expired token", 401));
     }
 
-    // ============================================================
-    // 3️⃣ Load model (SELLER or USER depending on token)
-    // ============================================================
     if (isSeller) {
       const seller = await Seller.findById(decoded.id);
       if (!seller) return next(new ErrorHandler("Seller not found", 404));
@@ -158,9 +140,6 @@ const protect = async (req, res, next) => {
   }
 };
 
-// =================================
-// ROLE GUARDS
-// =================================
 const sellerAuthorize = () => {
   return (req, res, next) => {
     if (!req.seller)
@@ -172,15 +151,17 @@ const sellerAuthorize = () => {
 
 const authorize = (...roles) => {
   return (req, res, next) => {
-    if (!req.user) return next(new ErrorHandler("Not authenticated", 401));
+    if (!req.user) {
+      return next(new ErrorHandler("Not authenticated as user", 401));
+    }
 
-    const userRoles = req.user.role || [];
-    const allowed = roles.some((role) => userRoles.includes(role));
+    const userRole = req.user.role;
 
-    if (!allowed)
+    if (!roles.includes(userRole)) {
       return next(
         new ErrorHandler("Access denied: insufficient permission", 403)
       );
+    }
 
     next();
   };

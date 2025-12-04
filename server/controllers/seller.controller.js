@@ -1,4 +1,5 @@
 const Seller = require("../models/seller.model");
+const RealEstateShop = require("../models/realEstateShop.model");
 const Property = require("../models/property.model");
 const redis = require("../config/redis");
 const crypto = require("crypto");
@@ -41,20 +42,15 @@ const setSellerTokens = async (sellerId, access, refresh) => {
   await redis.set(`seller_refresh:${sellerId}`, refresh, "EX", REFRESH_TTL);
 };
 
-exports.createSellerProfile = async (req, res, next) => {
+exports.createSeller = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const {
-      name,
-      email,
-      phone,
-      password,
-      businessName,
-      area,
-      address,
-      pincode,
-      referralCodeInput,
-    } = req.body;
+    const { name, email, phone, password, area, pincode, referralCodeInput } =
+      req.body;
+
+    if (!name || !email || !phone || !password || !area || !pincode) {
+      throw new Error("Required fields missing");
+    }
 
     // Check if seller already exists
     const existingSeller = await Seller.findOne({ userId });
@@ -72,11 +68,16 @@ exports.createSellerProfile = async (req, res, next) => {
       email,
       phone,
       password: hashedPassword,
-      businessName,
+
+      city: "Indore",
+      state: "Madhya Pradesh",
+      country: "India",
+
       area,
-      address,
       pincode,
+
       isVerified: false,
+      onboardingStep: 1,
     });
 
     // Handle referral
@@ -118,45 +119,197 @@ exports.sendPhoneOTP = async (req, res, next) => {
 exports.verifyPhoneOTP = async (req, res, next) => {
   try {
     const { phone, otp } = req.body;
-    if (!phone || !otp) throw new Error("Phone & OTP required");
+    if (!phone || !otp)
+      return next(new errorHandler("Phone & OTP required", 400));
 
+    // Optionally: require user id as well if you want OTP scoped to user: const userId = req.user?.id
     const storedOtp = await redis.get(`phoneOtp:${phone}`);
-    if (!storedOtp) throw new Error("OTP expired or invalid");
-    if (storedOtp !== otp.toString()) throw new Error("Invalid OTP");
+    if (!storedOtp)
+      return next(new errorHandler("OTP expired or invalid", 400));
+    if (storedOtp !== otp.toString())
+      return next(new errorHandler("Invalid OTP", 400));
 
     await redis.del(`phoneOtp:${phone}`);
 
-    // Mark seller as verified
+    // Mark seller as verified (prefer matching phone + user or return first match)
     const seller = await Seller.findOneAndUpdate(
-      { phone },
+      { phone }, // if you'd like to scope by user: { phone, userId: req.user.id }
       { isVerified: true },
       { new: true }
-    );
+    ).select("-password"); // ensure password is not selected
 
-    if (!seller) throw new Error("Seller not found");
+    if (!seller) return next(new errorHandler("Seller not found", 404));
 
-    const sellerId = seller._id.toString();
     const sid = makeSid();
 
-    const sellerAccess = tokenService.generateSellerAccessToken(seller, sid);
-    const sellerRefresh = tokenService.generateSellerRefreshToken(seller, sid);
+    // Generate tokens from a safe seller object (no password)
+    const safeSellerPayload = {
+      id: seller._id,
+      name: seller.name,
+      email: seller.email,
+      role: seller.role,
+    };
+
+    const sellerAccess = tokenService.generateSellerAccessToken(
+      safeSellerPayload,
+      sid
+    );
+    const sellerRefresh = tokenService.generateSellerRefreshToken(
+      safeSellerPayload,
+      sid
+    );
 
     await setSellerSession(seller, sid);
-    await setSellerTokens(sellerId, sellerAccess, sellerRefresh);
+    await setSellerTokens(seller._id.toString(), sellerAccess, sellerRefresh);
 
-    // Send cookies
     res.cookie("seller_access_token", sellerAccess, {
       ...cookieOptions,
-      maxAge: 15 * 60 * 1000,
+      maxAge: ACCESS_TTL * 1000,
     });
-
     res.cookie("seller_refresh_token", sellerRefresh, {
       ...cookieOptions,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: REFRESH_TTL * 1000,
     });
 
     res.status(200).json({
       message: "Phone verified successfully. Seller is now active.",
+      seller,
+      accessToken: sellerAccess,
+      refreshToken: sellerRefresh,
+    });
+  } catch (err) {
+    next(new errorHandler(err.message, 500));
+  }
+};
+
+exports.createShop = async (req, res, next) => {
+  try {
+    const sellerId = req.seller._id;
+    const seller = await Seller.findById(sellerId);
+
+    if (!seller) return next(new errorHandler("Seller not found", 404));
+    if (!seller.isVerified)
+      return next(new errorHandler("Phone not verified", 403));
+    if (seller.shop) return next(new errorHandler("Shop already created", 400));
+    // ensure Step 1 completed (isVerified is already checked)
+    if (seller.onboardingStep < 1)
+      return next(new errorHandler("Complete Step 1 first", 400));
+
+    const {
+      name,
+      bio,
+      category,
+      avatar,
+      coverBanner,
+      address,
+      opening_hours,
+      website,
+      socialLinks,
+    } = req.body;
+    if (!name) return next(new errorHandler("Shop name is required", 400));
+
+    const shop = await RealEstateShop.create({
+      sellerId,
+      name,
+      bio,
+      category,
+      avatar,
+      coverBanner,
+      address,
+      opening_hours,
+      website,
+      socialLinks,
+    });
+
+    seller.shop = shop._id;
+    seller.onboardingStep = 2;
+    await seller.save();
+
+    res.status(201).json({
+      message: "Shop created successfully",
+      shop,
+      step: seller.onboardingStep,
+    });
+  } catch (err) {
+    next(new errorHandler(err.message, 500));
+  }
+};
+
+exports.createBankAccount = async (req, res, next) => {
+  try {
+    const sellerId = req.seller._id;
+
+    const seller = await Seller.findById(sellerId);
+    if (!seller) throw new Error("Seller not found");
+    if (!seller.shop) throw new Error("Create shop first");
+    if (seller.onboardingStep < 2)
+      throw new Error("Complete Step 2 first (Create Shop)");
+
+    // ---------- DUMMY PAYMENT SETUP ----------
+    const razorpayCustomerId = "dummy_customer_" + Date.now();
+    const razorpayAccountId = "dummy_account_" + Date.now();
+
+    seller.razorpayCustomerId = razorpayCustomerId;
+    seller.razorpayAccountId = razorpayAccountId;
+    seller.onboardingStep = 3; // Completed Step 3 (Pending KYC verify)
+
+    await seller.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Dummy bank account created",
+      razorpayCustomerId,
+      razorpayAccountId,
+      step: seller.onboardingStep,
+    });
+  } catch (err) {
+    next(new errorHandler(err.message, 500));
+  }
+};
+
+exports.submitBankDocuments = async (req, res, next) => {
+  try {
+    const sellerId = req.seller._id;
+    const seller = await Seller.findById(sellerId);
+
+    if (!seller) throw new Error("Seller not found");
+    if (!seller.razorpayAccountId) throw new Error("Create bank account first");
+
+    // req.files from multer (AWS/Cloudinary/FileSystem)
+    if (!req.files || req.files.length === 0)
+      throw new Error("No documents uploaded");
+
+    const docs = req.files.map((file) => file.path);
+
+    seller.documents.push(...docs);
+    await seller.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Dummy KYC documents received",
+      documentsStored: docs.length,
+    });
+  } catch (err) {
+    next(new errorHandler(err.message, 500));
+  }
+};
+
+exports.verifyBankAccount = async (req, res, next) => {
+  try {
+    const sellerId = req.seller._id;
+
+    const seller = await Seller.findById(sellerId);
+    if (!seller) throw new Error("Seller not found");
+    if (!seller.razorpayAccountId) throw new Error("Create bank account first");
+    if (seller.isRazorpayVerified) throw new Error("Bank is already verified");
+
+    seller.isRazorpayVerified = true;
+    seller.onboardingStep = 4; // Optional: Final completion step
+    await seller.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Dummy bank verification successful",
       seller,
     });
   } catch (err) {
@@ -198,7 +351,18 @@ exports.sellerLogin = async (req, res, next) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.status(200).json({ message: "Login successful", seller });
+    // After successful login:
+    res.status(200).json({
+      message: "Login successful",
+      seller: {
+        id: seller._id,
+        name: seller.name,
+        email: seller.email,
+        role: seller.role,
+        isVerified: seller.isVerified,
+        onboardingStep: seller.onboardingStep,
+      },
+    });
   } catch (err) {
     next(new errorHandler(err.message, 401));
   }
@@ -221,19 +385,23 @@ exports.sellerRefreshToken = async (req, res, next) => {
       return next(new errorHandler("Invalid refresh token payload", 401));
 
     const storedRefresh = await redis.get(`seller_refresh:${sellerId}`);
-    if (!storedRefresh || storedRefresh !== refresh) {
+    if (!storedRefresh || storedRefresh !== refresh)
       return next(new errorHandler("Invalid or expired refresh token", 401));
-    }
 
     const sessionRaw = await redis.get(`seller_session:${sellerId}`);
     if (!sessionRaw) return next(new errorHandler("Session expired", 401));
     const session = JSON.parse(sessionRaw);
 
-    const seller = await Seller.findById(sellerId);
+    const seller = await Seller.findById(sellerId).select("-password");
     if (!seller) return next(new errorHandler("Seller no longer exists", 404));
 
     const newAccess = tokenService.generateSellerAccessToken(
-      seller,
+      {
+        id: seller._id,
+        name: seller.name,
+        email: seller.email,
+        role: seller.role,
+      },
       session.sid
     );
 
@@ -260,7 +428,7 @@ exports.sellerRefreshToken = async (req, res, next) => {
 };
 
 exports.updateSellerAccessToken = async (req, res, next) => {
-  return exports.refreshToken(req, res, next);
+  return exports.sellerRefreshToken(req, res, next);
 };
 
 exports.getSellerProfile = async (req, res, next) => {
@@ -283,9 +451,10 @@ exports.getSellerProfile = async (req, res, next) => {
 
 exports.getSellerPublicProfile = async (req, res, next) => {
   try {
-    const { sellerId } = req.params;
+    const { id } = req.params; // sellerId is the route param
 
-    const seller = await Seller.findById(sellerId)
+    // Fetch seller
+    const seller = await Seller.findById(id)
       .select(
         "name businessName area address pincode sellerCode referralCode isVerified createdAt"
       )
@@ -295,8 +464,8 @@ exports.getSellerPublicProfile = async (req, res, next) => {
       return res.status(404).json({ message: "Seller not found" });
     }
 
-    // Optional: Fetch their public properties
-    const properties = await Property.find({ sellerId })
+    // Fetch properties owned by this seller
+    const properties = await Property.find({ sellerId: id }) // FIXED
       .select("title price location images status")
       .lean();
 
@@ -314,20 +483,17 @@ exports.updateSellerProfile = async (req, res, next) => {
   try {
     const sellerId = req.seller._id;
 
-    const seller = await Seller.findOneAndUpdate(
+    const seller = await Seller.findByIdAndUpdate(
       sellerId,
       { $set: req.body },
-      { new: true }
+      { new: true, runValidators: true }
     );
 
-    if (!seller) {
-      return res.status(404).json({ message: "Seller not found" });
-    }
+    if (!seller) return next(new errorHandler("Seller not found", 404));
 
-    return res.status(200).json({
-      message: "Seller updated successfully",
-      seller,
-    });
+    return res
+      .status(200)
+      .json({ message: "Seller updated successfully", seller });
   } catch (err) {
     next(new errorHandler(err.message, 500));
   }
@@ -348,8 +514,8 @@ exports.getSellerStats = async (req, res, next) => {
   try {
     const sellerId = req.seller._id;
 
-    const seller = await Seller.findOne(sellerId);
-    if (!seller) return res.status(404).json({ message: "Seller not found" });
+    const seller = await Seller.findById(sellerId);
+    if (!seller) return next(new errorHandler("Seller not found", 404));
 
     const propertiesCount = await Property.countDocuments({ sellerId });
     const totalSales = seller.totalSales || 0;
@@ -363,15 +529,18 @@ exports.getSellerStats = async (req, res, next) => {
 exports.uploadDocuments = async (req, res, next) => {
   try {
     const sellerId = req.seller._id;
+    if (!req.files || !req.files.length)
+      return next(new errorHandler("No files uploaded", 400));
 
-    // Assume req.files is an array of uploaded file URLs
     const docs = req.files.map((file) => file.path);
 
-    const seller = await Seller.findOneAndUpdate(
+    const seller = await Seller.findByIdAndUpdate(
       sellerId,
       { $push: { documents: { $each: docs } } },
       { new: true }
     );
+
+    if (!seller) return next(new errorHandler("Seller not found", 404));
 
     res.status(200).json({ message: "Documents uploaded", seller });
   } catch (err) {
