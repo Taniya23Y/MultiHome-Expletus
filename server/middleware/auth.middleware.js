@@ -167,8 +167,60 @@ const authorize = (...roles) => {
   };
 };
 
+const protectOptional = async (req, res, next) => {
+  try {
+    const userAccess = req.cookies?.access_token;
+    const userRefresh = req.cookies?.refresh_token;
+
+    if (!userAccess && !userRefresh) return next(); // truly optional
+
+    let decoded = null;
+
+    // Try verifying access token first
+    if (userAccess) {
+      try {
+        decoded = tokenService.verifyUserAccess(userAccess);
+      } catch (_) {}
+    }
+
+    // Try refresh token if access invalid
+    if (!decoded && userRefresh) {
+      try {
+        const refDecoded = tokenService.verifyUserRefresh(userRefresh);
+        const userId = refDecoded.id;
+        const stored = await redis.get(`refresh:${userId}`);
+        const sessionRaw = await redis.get(`session:${userId}`);
+
+        if (stored && stored === userRefresh && sessionRaw) {
+          const session = JSON.parse(sessionRaw);
+          const user = await User.findById(userId);
+
+          const newAccess = tokenService.generateUserAccessToken(
+            user,
+            session.sid
+          );
+          res.cookie("access_token", newAccess, cookieOptions);
+
+          decoded = tokenService.verifyUserAccess(newAccess);
+        }
+      } catch (_) {}
+    }
+
+    if (decoded) {
+      const user = await User.findById(decoded.id);
+      if (user) req.user = user;
+    }
+
+    next();
+  } catch (err) {
+    console.error("protectOptional error:", err);
+    next();
+  }
+};
+
 module.exports = {
   protect,
+  protectOptional,
   authorize,
   sellerAuthorize,
   adminOnly: authorize("Admin"),

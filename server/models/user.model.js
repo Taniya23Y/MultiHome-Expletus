@@ -35,8 +35,10 @@ const userSchema = new Schema(
       select: false,
     },
     phone: {
-      type: [String],
+      type: String,
+      required: true,
       match: [/^[0-9]{10}$/, "Phone must be 10 digits"],
+      unique: true,
       index: true,
     },
     role: {

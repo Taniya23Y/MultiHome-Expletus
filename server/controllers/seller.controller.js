@@ -6,6 +6,7 @@ const crypto = require("crypto");
 const errorHandler = require("../utils/ErrorHandler");
 const tokenService = require("../services/tokenService");
 const bcrypt = require("bcryptjs");
+const User = require("../models/user.model");
 
 const generateSellerCode = () =>
   "SELL-" + crypto.randomBytes(3).toString("hex").toUpperCase();
@@ -44,58 +45,123 @@ const setSellerTokens = async (sellerId, access, refresh) => {
 
 exports.createSeller = async (req, res, next) => {
   try {
-    const userId = req.user.id;
-    const { name, email, phone, password, area, pincode, referralCodeInput } =
-      req.body;
+    const { name, email, phone, password, area, address, pincode } = req.body;
+    let user;
 
-    if (!name || !email || !phone || !password || !area || !pincode) {
-      throw new Error("Required fields missing");
-    }
+    // ───────────────────────────────────────────────
+    // 1️⃣ LOGGED-IN USER: create ONLY Seller
+    // ───────────────────────────────────────────────
+    if (req.user) {
+      user = await User.findById(req.user._id);
+      if (!user) throw new Error("Logged-in user not found");
 
-    // Check if seller already exists
-    const existingSeller = await Seller.findOne({ userId });
-    if (existingSeller) throw new Error("Seller already created");
+      const sellerName = user.name; // always take name from logged-in user
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+      // Check if seller already exists for this user
+      const existingSeller = await Seller.findOne({ userId: user._id });
+      if (existingSeller) throw new Error("You already have a seller account");
 
-    // Create new seller (phone verification pending)
-    const newSeller = new Seller({
-      userId,
-      sellerCode: generateSellerCode(),
-      referralCode: generateReferralCode(),
-      name,
-      email,
-      phone,
-      password: hashedPassword,
+      // Ensure email & phone uniqueness among sellers
+      if (email) {
+        const emailExists = await Seller.findOne({ email });
+        if (emailExists)
+          throw new Error("Email already used by another seller");
+      }
+      if (phone) {
+        const phoneExists = await Seller.findOne({ phone });
+        if (phoneExists)
+          throw new Error("Phone already used by another seller");
+      }
 
-      city: "Indore",
-      state: "Madhya Pradesh",
-      country: "India",
+      const hashedPassword = password
+        ? await bcrypt.hash(password, 10)
+        : undefined;
 
-      area,
-      pincode,
-
-      isVerified: false,
-      onboardingStep: 1,
-    });
-
-    // Handle referral
-    if (referralCodeInput) {
-      const referredSeller = await Seller.findOne({
-        referralCode: referralCodeInput,
+      const seller = await Seller.create({
+        userId: user._id,
+        name: sellerName,
+        email: email || user.email,
+        phone: phone || user.phone,
+        password: hashedPassword,
+        area,
+        address,
+        pincode,
+        sellerCode: generateSellerCode(),
+        referralCode: generateReferralCode(),
+        onboardingStep: 1,
+        isVerified: false,
       });
-      if (referredSeller) newSeller.referredBy = referredSeller._id;
+
+      return res.status(201).json({
+        success: true,
+        message: "Seller created for logged-in user",
+        sellerId: seller._id,
+        userId: user._id,
+      });
     }
 
-    await newSeller.save();
+    // ───────────────────────────────────────────────
+    // 2️⃣ GUEST USER: create BOTH User + Seller
+    // ───────────────────────────────────────────────
+    if (!req.user) {
+      if (!name || !email || !phone || !password) {
+        throw new Error("Name, email, phone, and password are required");
+      }
 
-    res.status(201).json({
-      message:
-        "Seller profile created successfully. Please verify your phone to activate.",
-      sellerId: newSeller._id,
-    });
+      // Check if a user with the same email or phone already exists
+      user = await User.findOne({ $or: [{ email }, { phone }] });
+
+      if (!user) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        user = await User.create({
+          name,
+          email,
+          phone,
+          password: hashedPassword,
+        });
+      }
+
+      // Check if seller already exists for this user
+      const existingSeller = await Seller.findOne({ userId: user._id });
+      if (existingSeller)
+        throw new Error("You are already registered as seller");
+
+      // Ensure seller email & phone uniqueness among sellers
+      const emailExists = await Seller.findOne({ email });
+      if (emailExists) throw new Error("Email already used by another seller");
+      const phoneExists = await Seller.findOne({ phone });
+      if (phoneExists) throw new Error("Phone already used by another seller");
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const seller = await Seller.create({
+        userId: user._id,
+        name,
+        email,
+        phone,
+        password: hashedPassword,
+        area,
+        address,
+        pincode,
+        sellerCode: generateSellerCode(),
+        referralCode: generateReferralCode(),
+        onboardingStep: 1,
+        isVerified: false,
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: "Seller created from guest user",
+        sellerId: seller._id,
+        userId: user._id,
+      });
+    }
   } catch (err) {
+    // Handle MongoDB duplicate key errors gracefully
+    if (err.code === 11000) {
+      const key = Object.keys(err.keyPattern)[0];
+      return next(new errorHandler(`${key} already exists`, 400));
+    }
     next(new errorHandler(err.message, 500));
   }
 };
@@ -429,6 +495,28 @@ exports.sellerRefreshToken = async (req, res, next) => {
 
 exports.updateSellerAccessToken = async (req, res, next) => {
   return exports.sellerRefreshToken(req, res, next);
+};
+
+exports.sellerLogout = async (req, res, next) => {
+  try {
+    const sellerId = req.seller?._id;
+    if (!sellerId) {
+      return res.status(400).json({ message: "Seller not logged in" });
+    }
+
+    // Delete session & tokens from Redis
+    await redis.del(`seller_session:${sellerId}`);
+    await redis.del(`seller_access:${sellerId}`);
+    await redis.del(`seller_refresh:${sellerId}`);
+
+    // Clear cookies
+    res.clearCookie("seller_access_token", { path: "/" });
+    res.clearCookie("seller_refresh_token", { path: "/" });
+
+    res.status(200).json({ message: "Seller logged out successfully" });
+  } catch (err) {
+    next(new errorHandler(err.message, 500));
+  }
 };
 
 exports.getSellerProfile = async (req, res, next) => {

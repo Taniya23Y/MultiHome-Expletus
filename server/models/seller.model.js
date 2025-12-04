@@ -29,7 +29,13 @@ const sellerSchema = new Schema(
     name: { type: String, required: true, trim: true },
     businessName: { type: String, trim: true },
     email: { type: String, trim: true, lowercase: true },
-    phone: { type: String, match: /^[0-9]{10}$/ },
+    phone: {
+      type: String,
+      required: true,
+      match: [/^[0-9]{10}$/, "Phone must be 10 digits"],
+      unique: true,
+      index: true,
+    },
     password: {
       type: String,
       required: [true, "Please Enter Your Password!"],

@@ -3,11 +3,11 @@ const router = express.Router();
 const sellerController = require("../controllers/seller.controller");
 const {
   protect,
-  authorize,
   sellerAuthorize,
+  protectOptional,
 } = require("../middleware/auth.middleware");
 
-router.post("/register", protect, sellerController.createSeller);
+router.post("/register", protectOptional, sellerController.createSeller);
 
 router.post("/send-otp", sellerController.sendPhoneOTP);
 router.post("/verify-otp", sellerController.verifyPhoneOTP);
@@ -15,12 +15,12 @@ router.post("/login", sellerController.sellerLogin);
 
 router.get("/seller-refresh", sellerController.sellerRefreshToken);
 
-// router.post(
-//   "/logout",
-//   protect,
-//   sellerAuthorize(),
-//   sellerController.logoutSeller
-// );
+router.post(
+  "/logout",
+  protect,
+  sellerAuthorize(),
+  sellerController.sellerLogout
+);
 
 router.get(
   "/profile",
