@@ -32,6 +32,7 @@ import SellerDashboard from "./components/Seller/Dashboard/SellerDashboard";
 import SellerProfile from "./components/Seller/SellerProfile";
 import SellerProperties from "./components/Seller/SellerProperties";
 import SellerVerifyPhone from "./components/Auth/verifyPhoneOTP";
+import ForgotPassword from "./components/Auth/ForgotPassword";
 
 function App() {
   const dispatch = useDispatch();
@@ -45,6 +46,7 @@ function App() {
         "/admin",
         "/login",
         "/seller-login",
+        "/forgot-password",
         "/signup",
         "/seller-create",
         "/verify-user",
@@ -122,6 +124,7 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/verify-user" element={<VerifyEmail />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* Seller */}
         <Route path="/become-a-seller" element={<SellerHome />} />

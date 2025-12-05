@@ -113,6 +113,15 @@ const Login = () => {
                     component="p"
                     className="text-red-500 text-xs mt-1"
                   />
+                  {/* Forgot Password Link */}
+                  <div className="text-right ">
+                    <Link
+                      to="/forgot-password"
+                      className="text-sm  text-blue-700 hover:underline hover:text-blue-500"
+                    >
+                      Forgot Password?
+                    </Link>
+                  </div>
                 </div>
 
                 {/* Submit Button */}

@@ -43,6 +43,7 @@ router.post(
 );
 
 router.get("/shop/:id", sellerController.getSellerPublicProfile);
+router.get("/shop/:shopId", sellerController.getShopPublicProfile);
 
 router.get(
   "/stats",

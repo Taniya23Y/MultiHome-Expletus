@@ -21,7 +21,7 @@ module.exports = {
   // -------- SELLER TOKENS -------- //
   generateSellerAccessToken(seller, sid) {
     return jwt.sign(
-      { id: seller._id, role: "seller", sid },
+      { id: seller.id, role: "seller", sid },
       process.env.JWT_SELLER_ACCESS_TOKEN,
       { expiresIn: "15m" }
     );
@@ -29,7 +29,7 @@ module.exports = {
 
   generateSellerRefreshToken(seller, sid) {
     return jwt.sign(
-      { id: seller._id, role: "seller", sid },
+      { id: seller.id, role: "seller", sid },
       process.env.JWT_SELLER_REFRESH_TOKEN,
       { expiresIn: "7d" }
     );

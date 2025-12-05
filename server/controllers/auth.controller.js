@@ -46,11 +46,11 @@ exports.registerUser = async (req, res, next) => {
     const error = validateRegistration(req.body);
     if (error) return next(new ErrorHandler(error, 400));
 
-    const { name, email, password } = req.body;
+    const { name, email, phone, password } = req.body;
     const exists = await User.findOne({ email });
     if (exists) return next(new ErrorHandler("Email already exists", 400));
 
-    const user = await User.create({ name, email, password });
+    const user = await User.create({ name, email, phone, password });
 
     const ok = await otpService.checkOtpRequests(email);
     if (!ok)
