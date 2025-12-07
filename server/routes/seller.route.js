@@ -11,7 +11,7 @@ router.post("/register", protectOptional, sellerController.createSeller);
 
 router.post("/send-otp", sellerController.sendPhoneOTP);
 router.post("/verify-otp", sellerController.verifyPhoneOTP);
-router.post("/login", sellerController.sellerLogin);
+router.post("/seller-login", sellerController.sellerLogin);
 
 router.get("/seller-refresh", sellerController.sellerRefreshToken);
 
@@ -23,7 +23,7 @@ router.post(
 );
 
 router.get(
-  "/profile",
+  "/seller-dashboard",
   protect,
   sellerAuthorize(),
   sellerController.getSellerProfile

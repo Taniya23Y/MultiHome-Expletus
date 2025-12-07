@@ -25,53 +25,51 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import SellerPrivateRoute from "./routes/SellerPrivateRoute";
 import PropertyDetail from "./pages/PropertyDetail";
 import SellerHome from "./pages/SellerHome";
-import SellerCreation from "./components/Auth/sellerCreation";
 import { useRefreshTokenQuery } from "./redux/features/auth/authApi";
 import { useSellerRefreshQuery } from "./redux/features/seller/sellerApi";
-import SellerDashboard from "./components/Seller/Dashboard/SellerDashboard";
+import SellerLayout from "./components/Seller/Dashboard/SellerLayout";
 import SellerProfile from "./components/Seller/SellerProfile";
-import SellerProperties from "./components/Seller/SellerProperties";
-import SellerVerifyPhone from "./components/Auth/verifyPhoneOTP";
 import ForgotPassword from "./components/Auth/ForgotPassword";
+import Loader from "./components/UI/Loader";
+import SellerLogin from "./components/Auth/SellerLogin";
+import SellerOnboarding from "./components/Auth/SellerOnboarding";
+import SellerDashboardHero from "./components/Seller/Dashboard/SellerDashboardHero";
+import SellerSubPage from "./components/Seller/Dashboard/SellerSubPage";
+import SellerSidebar from "./components/Seller/Dashboard/SellerSidebar";
 
 function App() {
   const dispatch = useDispatch();
   const location = useLocation();
   const pathname = location.pathname;
 
-  // --- Hide Navbar & Footer ---
-  const hideNavFooter = useMemo(
-    () =>
+  const hideNavFooter = useMemo(() => {
+    return (
+      pathname.startsWith("/admin") ||
+      pathname.startsWith("/seller") ||
       [
-        "/admin",
         "/login",
-        "/seller-login",
         "/forgot-password",
         "/signup",
-        "/seller-create",
         "/verify-user",
-        "/verify-phone-otp",
+        "/seller-login",
+        "/seller/onboarding",
         "/profile",
-      ].includes(pathname),
-    [pathname]
-  );
+      ].includes(pathname)
+    );
+  }, [pathname]);
 
-  const isUserRoute = useMemo(
-    () => pathname.startsWith("/profile") || pathname.startsWith("/"),
-    [pathname]
-  );
+  const isUserRoute = !pathname.startsWith("/seller");
 
   const isSellerRoute = useMemo(
     () =>
-      pathname.startsWith("/seller") ||
       pathname.startsWith("/become-a-seller") ||
-      pathname.startsWith("/verify-phone-otp") ||
-      pathname.startsWith("/seller"),
+      pathname.startsWith("/seller") ||
+      pathname.startsWith("/seller-login") ||
+      pathname.startsWith("/seller/onboarding"),
     [pathname]
   );
 
   // --- Always call hooks, skip based on route ---
-  // const userRefresh = useRefreshTokenQuery();
   const userRefresh = useRefreshTokenQuery(undefined, {
     skip: !isUserRoute,
   });
@@ -111,7 +109,7 @@ function App() {
   // --- Wait for refresh to complete BEFORE rendering anything ---
   const loading = userRefresh.isLoading || sellerRefresh.isLoading;
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <Loader />;
 
   return (
     <>
@@ -128,8 +126,8 @@ function App() {
 
         {/* Seller */}
         <Route path="/become-a-seller" element={<SellerHome />} />
-        <Route path="/seller-create" element={<SellerCreation />} />
-        <Route path="/verify-phone-otp" element={<SellerVerifyPhone />} />
+        <Route path="/seller/onboarding" element={<SellerOnboarding />} />
+        <Route path="/seller-login" element={<SellerLogin />} />
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute loading={loading} />}>
@@ -137,15 +135,16 @@ function App() {
           <Route path="/admin" element={<AdminDashboard />} />
         </Route>
 
-        <Route
-          path="/seller"
-          element={<SellerPrivateRoute loading={loading} />}
-        >
-          <Route path="dashboard" element={<SellerDashboard />} />
-          <Route path="profile" element={<SellerProfile />} />
-          {/* <Route path="properties" element={<SellerProperties />} /> */}
-          {/* <Route path="stats" element={<SellerStats />} /> */}
-          {/* <Route path="documents" element={<SellerDocuments />} /> */}
+        <Route element={<SellerPrivateRoute loading={loading} />}>
+          <Route
+            path="/seller/dashboard"
+            element={<SellerLayout key="seller-layout" />}
+          >
+            <Route index element={<SellerDashboardHero />} />
+            <Route path=":section" element={<SellerSubPage />} />
+          </Route>
+
+          <Route path="/seller/profile" element={<SellerProfile />} />
         </Route>
 
         <Route path="/property-detail/:id" element={<PropertyDetail />} />

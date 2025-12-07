@@ -1,3 +1,4 @@
+// redux/features/seller/sellerApi.js
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { setSellerCredentials, sellerLogoutState } from "./sellerAuthSlice";
 
@@ -12,7 +13,7 @@ export const sellerApi = createApi({
   endpoints: (builder) => ({
     createSeller: builder.mutation({
       query: (body) => ({
-        url: "/seller-create",
+        url: "/register",
         method: "POST",
         body,
       }),
@@ -20,7 +21,7 @@ export const sellerApi = createApi({
 
     sendSellerOTP: builder.mutation({
       query: (body) => ({
-        url: "/send-phone-otp",
+        url: "/send-otp",
         method: "POST",
         body,
       }),
@@ -28,19 +29,23 @@ export const sellerApi = createApi({
 
     verifySellerOTP: builder.mutation({
       query: (body) => ({
-        url: "/verify-phone-otp",
+        url: "/verify-otp",
         method: "POST",
         body,
       }),
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
-        const { data } = await queryFulfilled;
-        dispatch(setSellerCredentials(data.seller));
+        try {
+          const { data } = await queryFulfilled;
+          if (data?.seller) dispatch(setSellerCredentials(data.seller));
+        } catch {
+          // ignore
+        }
       },
     }),
 
     sellerLogin: builder.mutation({
       query: (body) => ({
-        url: "/login",
+        url: "/seller-login",
         method: "POST",
         body,
       }),
@@ -51,10 +56,7 @@ export const sellerApi = createApi({
     }),
 
     sellerRefresh: builder.query({
-      query: () => ({
-        url: "/seller-refresh",
-        method: "POST",
-      }),
+      query: () => "/seller-refresh",
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
@@ -66,7 +68,7 @@ export const sellerApi = createApi({
     }),
 
     sellerProfile: builder.query({
-      query: () => "/profile",
+      query: () => "/seller-profile",
       providesTags: ["Seller"],
     }),
 
@@ -79,6 +81,39 @@ export const sellerApi = createApi({
         dispatch(sellerLogoutState());
       },
     }),
+
+    // NEW: create shop
+    createShop: builder.mutation({
+      query: (body) => ({
+        url: "/create-shop",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    // NEW: bank endpoints
+    createBank: builder.mutation({
+      query: () => ({
+        url: "/bank/create",
+        method: "POST",
+      }),
+    }),
+
+    uploadBankDocs: builder.mutation({
+      query: (formData) => ({
+        url: "/bank/upload-docs",
+        method: "POST",
+        body: formData,
+        // do not set Content-Type here, fetchBaseQuery will handle FormData
+      }),
+    }),
+
+    verifyBank: builder.mutation({
+      query: () => ({
+        url: "/bank/verify",
+        method: "POST",
+      }),
+    }),
   }),
 });
 
@@ -90,4 +125,8 @@ export const {
   useSellerRefreshQuery,
   useSellerProfileQuery,
   useSellerLogoutMutation,
+  useCreateShopMutation,
+  useCreateBankMutation,
+  useUploadBankDocsMutation,
+  useVerifyBankMutation,
 } = sellerApi;

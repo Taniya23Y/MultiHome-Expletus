@@ -1,158 +1,100 @@
-/* eslint-disable no-unused-vars */
 import React from "react";
-import { motion } from "framer-motion";
-import { CheckCircle, Store, Rocket, Shield } from "lucide-react";
-
-import Button from "../components/UI/Button";
+import SellerHero from "../components/Screens/SellerPage/SellerHero";
+import CategoryUI from "../components/Screens/SellerPage/CategoryUI";
+import HowItWorks from "../components/Screens/SellerPage/HowItWorks";
 
 const SellerHome = () => {
   return (
-    <div className="w-full min-h-screen bg-white text-gray-800">
+    <div className="flex flex-col items-center justify-center">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-600 via-emerald-500 to-blue-700 text-white py-28 px-6 text-center">
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-5xl font-bold mb-4"
-        >
-          Sell Your Property on MultiHome
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="text-lg max-w-2xl mx-auto"
-        >
-          List your properties on India’s trusted real-estate marketplace and
-          connect instantly with verified buyers and renters. Reach verified
-          customers and grow your business effortlessly.
-        </motion.p>
-      </section>
+      <div className="pt-[4.3rem] w-[100%] px-2">
+        <SellerHero />
+      </div>
+      <CategoryUI />
+      <HowItWorks />
 
-      {/* Features Section */}
-      <section className="py-20 px-6 max-w-7xl mx-auto">
+      {/* FAQ Section */}
+      <section className="container mx-auto py-20 px-6">
         <h2 className="text-3xl font-bold text-center mb-12">
-          Why List Your Property on MultiHome?
+          Frequently Asked Questions
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-          {/* Feature 1 */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="bg-white shadow-lg rounded-2xl p-8 border border-gray-100"
-          >
-            <Store className="w-12 h-12 text-blue-600 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Grow Your Business</h3>
-            <p className="text-gray-600">
-              Reach thousands of genuine buyers and renters actively searching
-              for properties.
+        <div className="space-y-4">
+          {/* FAQ Item */}
+          <details className="bg-white p-5 rounded-lg shadow">
+            <summary className="font-semibold cursor-pointer text-lg">
+              How do I create a seller account on MultiHome?
+            </summary>
+            <p className="mt-3 text-gray-600">
+              Simply click the “Create Seller Account” button and fill out your
+              basic business information, property details, and verification
+              documents. Your account will be activated once verified.
             </p>
-          </motion.div>
+          </details>
 
-          {/* Feature 2 */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="bg-white shadow-lg rounded-2xl p-8 border border-gray-100"
-          >
-            <Rocket className="w-12 h-12 text-emerald-600 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">
-              List Your Property in Minutes
-            </h3>
-            <p className="text-gray-600">
-              Upload property details, photos, and pricing — start getting buyer
-              and renter inquiries instantly.
+          {/* FAQ Item */}
+          <details className="bg-white p-5 rounded-lg shadow">
+            <summary className="font-semibold cursor-pointer text-lg">
+              What documents are required for verification?
+            </summary>
+            <p className="mt-3 text-gray-600">
+              You will need identity proof, property ownership documents, and
+              optionally tax or business registration documents if you are
+              registering as a real estate business.
             </p>
-          </motion.div>
+          </details>
 
-          {/* Feature 3 */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="bg-white shadow-lg rounded-2xl p-8 border border-gray-100"
-          >
-            <Shield className="w-12 h-12 text-blue-700 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">
-              Verified & Secure Marketplace
-            </h3>
-            <p className="text-gray-600">
-              MultiHome verifies users and ensures secure communication between
-              sellers, buyers, and renters.
+          {/* FAQ Item */}
+          <details className="bg-white p-5 rounded-lg shadow">
+            <summary className="font-semibold cursor-pointer text-lg">
+              Can I connect my bank account for receiving payments?
+            </summary>
+            <p className="mt-3 text-gray-600">
+              Yes! MultiHome allows secure bank account linking so that you
+              receive payments directly after closing a deal. All transfers are
+              encrypted and processed through trusted payment partners.
             </p>
-          </motion.div>
-        </div>
-      </section>
+          </details>
 
-      {/* Account Creation Section */}
-      <section className="py-20 bg-gray-100 px-6">
-        <div className="max-w-4xl mx-auto bg-white p-10 rounded-3xl shadow-xl">
-          <h2 className="text-3xl font-bold mb-6 text-center">
-            Create Your Seller Account
-          </h2>
+          {/* FAQ Item */}
+          <details className="bg-white p-5 rounded-lg shadow">
+            <summary className="font-semibold cursor-pointer text-lg">
+              How many properties can I list?
+            </summary>
+            <p className="mt-3 text-gray-600">
+              You can list unlimited properties—residential, commercial, plots,
+              rentals, and more. Each listing must pass our verification team
+              before going live.
+            </p>
+          </details>
 
-          <form className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Full Name
-              </label>
-              <input
-                type="text"
-                className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-600 outline-none"
-                placeholder="Enter your full name"
-              />
-            </div>
+          {/* FAQ Item */}
+          <details className="bg-white p-5 rounded-lg shadow">
+            <summary className="font-semibold cursor-pointer text-lg">
+              Is there any fee to become a seller?
+            </summary>
+            <p className="mt-3 text-gray-600">
+              Creating a seller account is free! MultiHome may charge service
+              commissions on successful sales or premium upgrades for advanced
+              tools, but basic listing remains free.
+            </p>
+          </details>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Email Address
-              </label>
-              <input
-                type="email"
-                className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-600 outline-none"
-                placeholder="Enter your email"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Phone Number
-              </label>
-              <input
-                type="text"
-                className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-600 outline-none"
-                placeholder="Enter your phone number"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Service Category
-              </label>
-              <select className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-600 outline-none">
-                <option>Select a category</option>
-                <option>Electrician</option>
-                <option>Plumber</option>
-                <option>Carpenter</option>
-                <option>Cleaning Services</option>
-                <option>Mechanic</option>
-                <option>Painter</option>
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold text-lg transition"
-            >
-              Create Account
-            </button>
-          </form>
+          {/* FAQ Item */}
+          <details className="bg-white p-5 rounded-lg shadow">
+            <summary className="font-semibold cursor-pointer text-lg">
+              How do I communicate with buyers?
+            </summary>
+            <p className="mt-3 text-gray-600">
+              MultiHome provides an integrated chat system that allows real-time
+              communication with buyers. You can also schedule visits, respond
+              to questions, and manage offers.
+            </p>
+          </details>
         </div>
       </section>
     </div>
   );
 };
+
 export default SellerHome;

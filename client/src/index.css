@@ -2,7 +2,8 @@
 
 html,
 body {
-  @apply bg-[#F2F3EE] text-black;
+  /* @apply bg-[#F2F3EE] text-black; */
+  @apply bg-[#FFFFFF] text-black;
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   margin: 0;
   padding: 0;
@@ -38,4 +39,19 @@ body {
 
 .hero-font {
   font-family: Helvetica, Arial, sans-serif;
+}
+
+@keyframes slide {
+  0%,
+  50% {
+    transform: translateX(0%);
+  }
+  50%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-slide {
+  animation: slide 3s infinite ease-in-out;
 }

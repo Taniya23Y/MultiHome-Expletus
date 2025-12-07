@@ -22,6 +22,8 @@ import NavbarDesktop from "./NavbarDesktop";
 import NavbarActions from "./NavbarActions";
 import NavbarMobile from "./NavbarMobile";
 import Button from "../../../UI/Button";
+import { useLocation } from "react-router-dom";
+import SellerNavbarActions from "./SellerNavbarActions";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -38,6 +40,9 @@ export default function Navbar() {
   const menuTimeoutRef = useRef(null);
   const navRefs = useRef({});
   const megaMenuRef = useRef(null);
+
+  const location = useLocation();
+  const isSellerPage = location.pathname.startsWith("/become-a-seller");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -349,20 +354,29 @@ export default function Navbar() {
 
         {/* RIGHT SECTION */}
         <div className="flex items-center gap-2">
-          <Button
-            label="Become a Seller"
-            variant="outline"
-            size="sm"
-            rounded="xl"
-            href="/become-a-seller"
-            hideTextOnMobile={true}
-            hideIconOnMobile={false}
-          />
+          {!isSellerPage && (
+            <Button
+              label="Become a Seller"
+              variant="outline"
+              size="sm"
+              rounded="xl"
+              href="/become-a-seller"
+              hideTextOnMobile={true}
+              hideIconOnMobile={false}
+            />
+          )}
 
-          <NavbarActions
-            isMenuOpen={isMenuOpen}
-            setIsMenuOpen={setIsMenuOpen}
-          />
+          {!isSellerPage ? (
+            <NavbarActions
+              isMenuOpen={isMenuOpen}
+              setIsMenuOpen={setIsMenuOpen}
+            />
+          ) : (
+            <SellerNavbarActions
+              isMenuOpen={isMenuOpen}
+              setIsMenuOpen={setIsMenuOpen}
+            />
+          )}
         </div>
       </div>
 

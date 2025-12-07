@@ -8,6 +8,7 @@ import RealTimeChatImage from "./images/RealTimeChat.jpeg";
 import RecommendationHomeImage from "./images/RecommendationHome.jpeg";
 import SupportImageImage from "./images/SupportImage.jpeg";
 import SendPaymentImage from "./images/SendPayment.jpeg";
+import SellerHeroImage from "./images/heroSeller.png";
 
 export const assets = {
   logoImg: logoTransImg,
@@ -20,4 +21,5 @@ export const assets = {
   RecommendationHomeImage: RecommendationHomeImage,
   SupportImageImage: SupportImageImage,
   SendPaymentImage: SendPaymentImage,
+  SellerHeroImage: SellerHeroImage,
 };

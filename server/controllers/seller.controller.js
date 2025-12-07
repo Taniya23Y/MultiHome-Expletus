@@ -49,47 +49,42 @@ exports.createSeller = async (req, res, next) => {
 
     let user;
 
-    /* ------------------------------------------------------------
-       CASE 1: LOGGED-IN USER WANTS TO BECOME SELLER
-    ------------------------------------------------------------ */
+    // CASE 1: LOGGED-IN USER → BECOME SELLER
     if (req.user) {
       user = await User.findById(req.user._id).select("+password");
       if (!user) throw new Error("Logged-in user not found");
 
-      if (!password) throw new Error("Password is required for seller account");
+      if (!password) throw new Error("Password is required to create seller");
 
       // Check if seller already exists
       const existingSeller = await Seller.findOne({ userId: user._id });
       if (existingSeller) throw new Error("You already have a seller account");
 
-      // Ensure seller email/phone are unique among sellers
-      if (email) {
-        const emailExists = await Seller.findOne({ email });
-        if (emailExists)
-          throw new Error("Email already used by another seller");
-      }
+      // Unique seller email/phone
+      if (email && (await Seller.findOne({ email })))
+        throw new Error("Email already used by another seller");
 
-      if (phone) {
-        const phoneExists = await Seller.findOne({ phone });
-        if (phoneExists)
-          throw new Error("Phone already used by another seller");
-      }
+      if (phone && (await Seller.findOne({ phone })))
+        throw new Error("Phone already used by another seller");
 
-      // IMPORTANT: No hashing here
-      // Using user's existing hashed password
+      // Auto verify user (since phone/email verified already)
+      user.isVerified = true;
+      await user.save();
+
+      // Create seller using SAME hashed password
       const seller = await Seller.create({
         userId: user._id,
         name: user.name,
         email: email || user.email,
         phone: phone || user.phone,
-        password: user.password, // already hashed
+        password: user.password,
         area,
         address,
         pincode,
         sellerCode: generateSellerCode(),
         referralCode: generateReferralCode(),
         onboardingStep: 1,
-        isVerified: false,
+        isVerified: true,
       });
 
       return res.status(201).json({
@@ -100,60 +95,60 @@ exports.createSeller = async (req, res, next) => {
       });
     }
 
-    /* ------------------------------------------------------------
-       CASE 2: GUEST USER → CREATE USER + SELLER
-    ------------------------------------------------------------ */
+    // GUEST USER → CREATE USER + SELLER
     if (!req.user) {
       if (!name || !email || !phone || !password) {
         throw new Error("Name, email, phone, and password are required");
       }
 
-      // Check if a User already exists
+      // Search for existing user
       user = await User.findOne({ $or: [{ email }, { phone }] }).select(
         "+password"
       );
 
       if (!user) {
-        // Create new user — NO HASHING HERE
+        // Create NEW user → password is hashed by pre-save hook
         user = await User.create({
           name,
           email,
           phone,
-          password, // plaintext → hashed automatically by schema
+          password,
+          isVerified: true,
         });
+      } else {
+        // EXISTING user → update password ONLY if changed
+        const isSamePassword = await bcrypt.compare(password, user.password);
+        if (!isSamePassword) user.password = password;
+
+        user.isVerified = true;
+        await user.save();
       }
 
-      // If user exists — DO NOT CHANGE PASSWORD
-      // DO NOT COMPARE PASSWORD
-      // DO NOT HASH PASSWORD
-      // Just use user's existing hashed password
-
-      // Ensure seller does not already exist
-      const existingSeller = await Seller.findOne({ userId: user._id });
-      if (existingSeller)
-        throw new Error("You are already registered as a seller");
+      // Prevent duplicate seller
+      if (await Seller.findOne({ userId: user._id }))
+        throw new Error("You already have a seller account");
 
       // Unique seller email/phone
-      const emailExists = await Seller.findOne({ email });
-      if (emailExists) throw new Error("Email already used by another seller");
+      if (await Seller.findOne({ email }))
+        throw new Error("Email already used by another seller");
 
-      const phoneExists = await Seller.findOne({ phone });
-      if (phoneExists) throw new Error("Phone already used by another seller");
+      if (await Seller.findOne({ phone }))
+        throw new Error("Phone already used by another seller");
 
-      // Create seller
+      // Create seller using the SAME hashed password
       const seller = await Seller.create({
         userId: user._id,
         name,
         email,
         phone,
-        password: user.password, // use existing hashed password
+        password: user.password,
         area,
         address,
         pincode,
         sellerCode: generateSellerCode(),
         referralCode: generateReferralCode(),
         onboardingStep: 1,
-        isVerified: false,
+        isVerified: true,
       });
 
       return res.status(201).json({
@@ -164,7 +159,6 @@ exports.createSeller = async (req, res, next) => {
       });
     }
   } catch (err) {
-    // Handle duplicate key errors
     if (err.code === 11000) {
       const key = Object.keys(err.keyPattern)[0];
       return next(new errorHandler(`${key} already exists`, 400));
@@ -433,7 +427,7 @@ exports.sellerLogin = async (req, res, next) => {
 
     // After successful login:
     res.status(200).json({
-      message: "Login successful",
+      message: "Seller Login successful",
       seller: {
         id: seller._id,
         name: seller.name,
