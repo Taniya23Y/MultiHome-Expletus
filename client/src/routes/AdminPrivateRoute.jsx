@@ -1,7 +1,7 @@
 import { Outlet, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-export default function SellerPrivateRoute() {
+export default function AdminPrivateRoute() {
   const { isSellerAuthenticated, sellerLoading } = useSelector(
     (state) => state.sellerAuth
   );

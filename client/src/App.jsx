@@ -16,13 +16,14 @@ import NotFound from "./pages/NotFound";
 import Login from "./components/Auth/Login";
 import SignUp from "./components/Auth/Signup";
 import Home from "./pages/Home";
-import AdminDashboard from "./components/Admin/Dashboard/AdminDashboard";
+import AdminLayout from "./components/Admin/Dashboard/AdminLayout";
 import Footer from "./components/Screens/common/Footer";
 import Navbar from "./components/Screens/common/Navbar/Navbar";
 import VerifyEmail from "./components/Auth/verifyEmail";
 import UserDashboard from "./components/User/Dashboard/UserDashboard";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import SellerPrivateRoute from "./routes/SellerPrivateRoute";
+import AdminPrivateRoute from "./routes/AdminPrivateRoute";
 import PropertyDetail from "./pages/PropertyDetail";
 import SellerHome from "./pages/SellerHome";
 import { useRefreshTokenQuery } from "./redux/features/auth/authApi";
@@ -35,7 +36,8 @@ import SellerLogin from "./components/Auth/SellerLogin";
 import SellerOnboarding from "./components/Auth/SellerOnboarding";
 import SellerDashboardHero from "./components/Seller/Dashboard/SellerDashboardHero";
 import SellerSubPage from "./components/Seller/Dashboard/SellerSubPage";
-import SellerSidebar from "./components/Seller/Dashboard/SellerSidebar";
+import AdminSubPage from "./components/Admin/Dashboard/AdminSubPage";
+import AdminDashboardHero from "./components/Admin/Dashboard/AdminDashboardHero";
 
 function App() {
   const dispatch = useDispatch();
@@ -69,7 +71,6 @@ function App() {
     [pathname]
   );
 
-  // --- Always call hooks, skip based on route ---
   const userRefresh = useRefreshTokenQuery(undefined, {
     skip: !isUserRoute,
   });
@@ -77,7 +78,6 @@ function App() {
     skip: !isSellerRoute,
   });
 
-  // --- Handle refresh & populate Redux ---
   useEffect(() => {
     if (userRefresh.isSuccess && userRefresh.data) {
       dispatch(
@@ -106,7 +106,6 @@ function App() {
     dispatch,
   ]);
 
-  // --- Wait for refresh to complete BEFORE rendering anything ---
   const loading = userRefresh.isLoading || sellerRefresh.isLoading;
 
   if (loading) return <Loader />;
@@ -132,7 +131,6 @@ function App() {
         {/* Protected Routes */}
         <Route element={<ProtectedRoute loading={loading} />}>
           <Route path="/profile" element={<UserDashboard />} />
-          <Route path="/admin" element={<AdminDashboard />} />
         </Route>
 
         <Route element={<SellerPrivateRoute loading={loading} />}>
@@ -147,7 +145,26 @@ function App() {
           <Route path="/seller/profile" element={<SellerProfile />} />
         </Route>
 
+        {/* <Route element={<AdminPrivateRoute loading={loading} />}>
+          <Route
+            path="/admin/dashboard"
+            element={<AdminLayout key="admin-layout" />}
+          >
+            <Route element={<AdminDashboardHero />} />
+            <Route path=":section" element={<AdminSubPage />} />
+          </Route>
+        </Route> */}
+
         <Route path="/property-detail/:id" element={<PropertyDetail />} />
+
+        <Route
+          path="/admin/dashboard"
+          element={<AdminLayout key="admin-layout" />}
+        >
+          <Route element={<AdminDashboardHero />} />
+          <Route path=":section" element={<AdminSubPage />} />
+        </Route>
+
         <Route path="*" element={<NotFound />} />
       </Routes>
 

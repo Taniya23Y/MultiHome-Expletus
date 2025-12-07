@@ -5,7 +5,7 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 import Button from "../../UI/Button.jsx";
 import DashboardHeader from "./DashboardHeader.jsx";
 
-const DashboardHero = ({ activeTab }) => {
+const AdminDashboardHero = ({ activeTab }) => {
   const [properties, setProperties] = useState(dummyProperties);
   const [form, setForm] = useState({
     id: "",
@@ -65,7 +65,6 @@ const DashboardHero = ({ activeTab }) => {
 
   return (
     <main className="flex-1 bg-gray-50 min-h-screen">
-      {/* ✅ Fixed Dashboard Header */}
       <DashboardHeader />
 
       <div className="px-4 sm:px-6 pt-24 pb-10">
@@ -198,4 +197,4 @@ const DashboardHero = ({ activeTab }) => {
   );
 };
 
-export default DashboardHero;
+export default AdminDashboardHero;
