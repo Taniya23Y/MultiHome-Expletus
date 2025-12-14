@@ -80,6 +80,12 @@ const sellerSchema = new Schema(
     ],
 
     totalListings: { type: Number, default: 0 },
+    properties: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Property",
+      },
+    ],
     totalConfirmedDeals: { type: Number, default: 0 },
     totalSales: { type: Number, default: 0 },
 

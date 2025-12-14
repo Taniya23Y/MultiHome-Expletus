@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const slugify = require("slugify");
 
 const categorySchema = new mongoose.Schema(
   {
@@ -16,7 +17,6 @@ const categorySchema = new mongoose.Schema(
         "Residential",
         "Commercial",
         "Industrial",
-        "Land",
         "PG/Hostel",
         "Office Space",
         "Other",
@@ -33,6 +33,12 @@ const categorySchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    slug: {
+      type: String,
+      unique: true,
+      index: true,
+    },
+
     isActive: {
       type: Boolean,
       default: true,

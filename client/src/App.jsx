@@ -123,15 +123,15 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        {/* Seller */}
-        <Route path="/become-a-seller" element={<SellerHome />} />
-        <Route path="/seller/onboarding" element={<SellerOnboarding />} />
-        <Route path="/seller-login" element={<SellerLogin />} />
-
         {/* Protected Routes */}
         <Route element={<ProtectedRoute loading={loading} />}>
           <Route path="/profile" element={<UserDashboard />} />
         </Route>
+
+        {/* Seller */}
+        <Route path="/become-a-seller" element={<SellerHome />} />
+        <Route path="/seller/onboarding" element={<SellerOnboarding />} />
+        <Route path="/seller-login" element={<SellerLogin />} />
 
         <Route element={<SellerPrivateRoute loading={loading} />}>
           <Route

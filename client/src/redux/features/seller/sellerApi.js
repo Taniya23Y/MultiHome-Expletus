@@ -1,4 +1,3 @@
-// redux/features/seller/sellerApi.js
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { setSellerCredentials, sellerLogoutState } from "./sellerAuthSlice";
 
@@ -104,7 +103,6 @@ export const sellerApi = createApi({
         url: "/bank/upload-docs",
         method: "POST",
         body: formData,
-        // do not set Content-Type here, fetchBaseQuery will handle FormData
       }),
     }),
 
@@ -113,6 +111,11 @@ export const sellerApi = createApi({
         url: "/bank/verify",
         method: "POST",
       }),
+    }),
+
+    sellerProperties: builder.query({
+      query: () => "/properties",
+      providesTags: ["Properties"],
     }),
   }),
 });
@@ -129,4 +132,5 @@ export const {
   useCreateBankMutation,
   useUploadBankDocsMutation,
   useVerifyBankMutation,
+  useSellerPropertiesQuery,
 } = sellerApi;

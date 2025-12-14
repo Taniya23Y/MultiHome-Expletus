@@ -1,6 +1,4 @@
-/* eslint-disable no-unused-vars */
 import React, { useState } from "react";
-
 import { Link, useNavigate } from "react-router-dom";
 import { useSellerLoginMutation } from "../../redux/features/seller/sellerApi";
 import { toast } from "react-toastify";
@@ -8,16 +6,13 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { FaEye, FaEyeSlash, FaEnvelope, FaLock } from "react-icons/fa";
 import { assets } from "../../assets/data";
+import { setSellerCredentials } from "../../redux/features/seller/sellerAuthSlice";
+import { useDispatch } from "react-redux";
 
 const SellerLogin = () => {
-  const [formData, setFormData] = useState({
-    emailOrPhone: "",
-    password: "",
-  });
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
-
   const navigate = useNavigate();
-
   const [sellerLogin, { isLoading }] = useSellerLoginMutation();
 
   const LoginSchema = Yup.object().shape({
@@ -64,6 +59,8 @@ const SellerLogin = () => {
                   phone: values.emailOrPhone,
                   password: values.password,
                 }).unwrap();
+
+                dispatch(setSellerCredentials(res.seller));
 
                 toast.success(res.message || "Seller Login Successful!");
 

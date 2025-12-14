@@ -1,13 +1,21 @@
 import { useParams } from "react-router-dom";
 import AddProperty from "../Property/AddProperty";
+import ViewProperties from "../Property/ViewProperties";
+import EditPropertyDetails from "../Property/EditPropertyDetails";
+import SellerProfile from "../SellerProfile";
 
 export default function SellerSubPage() {
   const { section } = useParams();
 
   const pages = {
     "add-property": <AddProperty />,
-    "edit-property-details": <div>Edit Property Page Coming Soon</div>,
+    "view-properties": <ViewProperties />,
+    "edit-property-details": <EditPropertyDetails />,
     "manage-availability": <div>Manage Availability Coming Soon</div>,
+    profile: <SellerProfile />,
+    "Bank details": <div>Manage Availability Coming Soon</div>,
+    "Identity verification": <div>Manage Availability Coming Soon</div>,
+    "Notification preferences": <div>Manage Availability Coming Soon</div>,
   };
 
   return (

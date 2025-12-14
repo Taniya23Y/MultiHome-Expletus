@@ -5,7 +5,10 @@ const dbConnect = require("./config/dbConnect");
 const errorHandler = require("./middleware/errorHandler");
 const userRoutes = require("./routes/user.route");
 const sellerRoutes = require("./routes/seller.route");
-const propertyRoutes = require("./routes/property.routes");
+const adminRoutes = require("./routes/admin.route");
+const propertyRoutes = require("./routes/property.route");
+const categoryRoutes = require("./routes/category.route");
+const subcategoryRoutes = require("./routes/subcategory.route");
 const redis = require("./config/redis");
 const cookieParser = require("cookie-parser");
 
@@ -31,7 +34,10 @@ app.use(cookieParser());
 // Use routes
 app.use("/api/auth", userRoutes);
 app.use("/api/seller", sellerRoutes);
-app.use("/api/properties", propertyRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/property", propertyRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/subcategories", subcategoryRoutes);
 app.use(errorHandler);
 
 // 404 - not-found routing ---. like if user write something like this[/homeoooooo]

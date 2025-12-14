@@ -72,12 +72,6 @@ const AdminDashboardHero = ({ activeTab }) => {
           <h1 className="text-xl sm:text-2xl font-semibold text-gray-800">
             🏠 Admin Dashboard
           </h1>
-          <Link to="/" className="w-full sm:w-auto">
-            <Button
-              text="Back to Home"
-              className="bg-[#7FC68A] text-white w-full sm:w-auto px-5 py-2 rounded-lg hover:bg-[#6AB57C]"
-            />
-          </Link>
         </div>
 
         {/* --- VIEW TAB: Table --- */}

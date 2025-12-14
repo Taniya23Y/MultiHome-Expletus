@@ -8,6 +8,7 @@ import PopularAreas from "../components/Screens/HomePage/PopularAreas.jsx";
 import FeaturedPropertyListing from "../components/Screens/HomePage/FeaturedPropertyListing";
 import SuggestedProperties from "../components/Screens/HomePage/SuggestedProperties.jsx";
 import PropertyList from "../components/Screens/HomePage/PropertyList.jsx";
+import SeeProperty from "../components/Screens/HomePage/SeeProperty.jsx";
 
 const Home = () => {
   return (
@@ -20,6 +21,7 @@ const Home = () => {
       <PopularAreas />
       <SuggestedProperties />
       <AvailableProperties />
+      <SeeProperty />
       {/* <PropertyList /> */}
       <HowItWork />
       <SubscribeNewsletter />

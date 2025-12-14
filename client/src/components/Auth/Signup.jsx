@@ -19,6 +19,7 @@ const SignUp = () => {
     email: Yup.string()
       .email("Invalid email address")
       .required("Email is required"),
+    phone: Yup.string().min(10).required("Phone is required"),
     password: Yup.string()
       .min(6, "Password must be at least 6 characters")
       .required("Password is required"),
@@ -119,6 +120,25 @@ const SignUp = () => {
                   />
                   <ErrorMessage
                     name="email"
+                    component="p"
+                    className="text-red-500 text-xs mt-1"
+                  />
+                </div>
+
+                {/* Phone */}
+                <div className="relative">
+                  <label className="block mb-1 font-medium text-gray-700">
+                    Phone
+                  </label>
+                  <FaEnvelope className="absolute left-3 top-[42px] text-gray-400 text-sm" />
+                  <Field
+                    type="phone"
+                    name="phone"
+                    placeholder="Enter your phone number"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-400"
+                  />
+                  <ErrorMessage
+                    name="phone"
                     component="p"
                     className="text-red-500 text-xs mt-1"
                   />

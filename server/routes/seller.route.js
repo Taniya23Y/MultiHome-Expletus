@@ -23,7 +23,7 @@ router.post(
 );
 
 router.get(
-  "/seller-dashboard",
+  "/seller-profile",
   protect,
   sellerAuthorize(),
   sellerController.getSellerProfile

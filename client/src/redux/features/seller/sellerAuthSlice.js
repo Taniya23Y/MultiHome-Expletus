@@ -11,6 +11,7 @@ const sellerAuthSlice = createSlice({
   initialState,
   reducers: {
     setSellerCredentials: (state, action) => {
+      state.sellerLoading = true;
       state.seller = action.payload;
       state.isSellerAuthenticated = true;
       state.sellerLoading = false;

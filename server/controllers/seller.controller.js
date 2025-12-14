@@ -265,7 +265,6 @@ exports.createShop = async (req, res, next) => {
     const {
       name,
       bio,
-      category,
       avatar,
       coverBanner,
       address,
@@ -279,7 +278,6 @@ exports.createShop = async (req, res, next) => {
       sellerId,
       name,
       bio,
-      category,
       avatar,
       coverBanner,
       address,

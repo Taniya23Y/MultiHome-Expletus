@@ -1,161 +1,504 @@
 const Property = require("../models/property.model");
-const Seller = require("../models/seller.model");
+const Category = require("../models/category.model");
+const Subcategory = require("../models/subcategory.model");
+const errorHandler = require("../utils/ErrorHandler");
+const slugify = require("slugify");
 
-exports.createProperty = async (req, res) => {
+exports.createProperty = async (req, res, next) => {
   try {
-    // 1️ Check if user is seller
-    if (!req.user.linkedProfiles || !req.user.linkedProfiles.sellerId) {
-      return res.status(403).json({
-        message:
-          "Only sellers can create properties. Create seller profile first.",
-      });
+    const seller = req.seller;
+    if (!seller)
+      return next(new errorHandler("Seller authentication required", 401));
+
+    const {
+      title,
+      description,
+      price,
+      discountPrice,
+      maintenanceFee,
+      securityDeposit,
+      location,
+      bedrooms,
+      bathrooms,
+      balconies,
+      areaSqFt,
+      carpetArea,
+      propertyType,
+      furnished,
+      facing,
+      floorNumber,
+      totalFloors,
+      builtYear,
+      societyName,
+      parking,
+      liftAvailable,
+      securityAvailable,
+      electricityBackup,
+      waterSupply,
+      flooringType,
+      images,
+      videos,
+      floorPlan,
+      ownershipType,
+      category,
+      subcategory,
+      tags,
+      availableFrom,
+      preferredTenants,
+      brokerAllowed,
+      monthlyMaintenanceIncluded,
+      facingRoadWidth,
+      landAreaSqFt,
+      utilityConnections,
+    } = req.body;
+
+    // Validate category
+    const categoryData = await Category.findById(category);
+    if (!categoryData)
+      return next(new errorHandler("Invalid category selected", 400));
+
+    // Validate subcategory (if sent)
+    if (subcategory) {
+      const sub = await Subcategory.findById(subcategory);
+      if (!sub)
+        return next(new errorHandler("Invalid subcategory selected", 400));
+
+      if (sub.category.toString() !== category.toString()) {
+        return next(
+          new errorHandler("Subcategory doesn't belong to category", 400)
+        );
+      }
     }
 
-    const sellerId = req.user.linkedProfiles.sellerId;
+    // Slug
+    const slug = slugify(`${title}-${Date.now()}`, { lower: true });
 
-    // 2️ Ensure Seller Exists
-    const seller = await Seller.findById(sellerId);
-    if (!seller) {
-      return res.status(404).json({ message: "Seller profile not found" });
-    }
-
-    // 3️ Extract data from req.body
-    const propertyData = req.body;
-
-    // 4️ Add owner + seller relation
-    propertyData.owner = req.user._id; // property owned by user
-    propertyData.sellerId = sellerId; // seller reference for stats
-
-    // 5️ Images upload support (if using multer)
-    if (req.files && req.files.images) {
-      propertyData.images = req.files.images.map((file) => ({
+    let uploadedImages = [];
+    if (req.files?.images) {
+      uploadedImages = req.files.images.map((file) => ({
         url: file.path,
-        caption: file.originalname,
+        caption: "",
       }));
     }
+    let floorPlanUrl = "";
+    if (req.files?.floorPlan) {
+      floorPlanUrl = req.files.floorPlan[0].path;
+    }
 
-    // 6️ Save property
-    const property = new Property(propertyData);
-    await property.save();
+    // --- FINAL PROPERTY CREATE ---
+    const property = await Property.create({
+      // Seller info
+      sellerId: seller._id,
+      sellerCode: seller.sellerCode,
+      owner: seller._id,
 
-    // 7️ Update seller total listings
-    seller.totalListings += 1;
+      // Basic property fields
+      title,
+      description,
+      price,
+      discountPrice,
+      maintenanceFee,
+      securityDeposit,
+
+      // Location (property's own)
+      location,
+
+      // Property details
+      bedrooms,
+      bathrooms,
+      balconies,
+      areaSqFt,
+      carpetArea,
+      propertyType,
+      furnished,
+      facing,
+      floorNumber,
+      totalFloors,
+      builtYear,
+      societyName,
+      parking,
+      liftAvailable,
+      securityAvailable,
+      electricityBackup,
+      waterSupply,
+      flooringType,
+
+      // Media
+      images: uploadedImages,
+      videos,
+      floorPlan: floorPlanUrl,
+
+      // Ownership
+      ownershipType,
+
+      // Categories
+      category,
+      subcategory,
+
+      // Slug
+      slug,
+      tags,
+      availableFrom,
+      preferredTenants,
+      brokerAllowed,
+      monthlyMaintenanceIncluded,
+
+      facingRoadWidth,
+      landAreaSqFt,
+      utilityConnections,
+    });
+
+    seller.properties.push(property._id);
+    seller.totalListings = seller.properties.length;
     await seller.save();
 
     res.status(201).json({
+      success: true,
       message: "Property created successfully",
       property,
     });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error", error: error.message });
+  } catch (err) {
+    console.log("Error creating property:", err);
+    next(new errorHandler(err.message, 500));
   }
 };
 
-exports.getMyProperties = async (req, res) => {
+// exports.updateProperty = async (req, res, next) => {
+//   try {
+//     const seller = req.seller;
+//     const data = req.body;
+
+//     const prop = await Property.findOne({
+//       _id: req.params.id,
+//       sellerId: seller._id,
+//     });
+
+//     if (!prop)
+//       return next(new errorHandler("Property not found or unauthorized", 404));
+
+//     // Ensure discountPrice < price when updating
+//     if (data.discountPrice && data.price) {
+//       if (data.discountPrice >= data.price) {
+//         return next(
+//           new errorHandler(
+//             "Discount price must be less than the actual price",
+//             400
+//           )
+//         );
+//       }
+//     }
+
+//     // If discountPrice is sent but price is not sent
+//     if (data.discountPrice && !data.price) {
+//       const existing = await Property.findById(req.params.id);
+//       if (data.discountPrice >= existing.price) {
+//         return next(
+//           new errorHandler(
+//             "Discount price must be less than the actual price",
+//             400
+//           )
+//         );
+//       }
+//     }
+
+//     // If category/subcategory is being updated — validate
+//     if (req.body.category) {
+//       const cat = await Category.findById(req.body.category);
+//       if (!cat) return next(new errorHandler("Invalid category", 400));
+//     }
+
+//     if (req.body.subcategory) {
+//       const sub = await Subcategory.findById(req.body.subcategory);
+//       if (!sub) return next(new errorHandler("Invalid subcategory", 400));
+
+//       if (req.body.category && sub.category.toString() !== req.body.category) {
+//         return next(new errorHandler("Invalid subcategory for category", 400));
+//       }
+//     }
+
+//     const updated = await Property.findByIdAndUpdate(req.params.id, req.body, {
+//       new: true,
+//       runValidators: true,
+//     });
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Property updated",
+//       property: updated,
+//     });
+//   } catch (err) {
+//     next(new errorHandler(err.message, 500));
+//   }
+// };
+
+exports.updateProperty = async (req, res, next) => {
   try {
-    if (!req.user.linkedProfiles?.sellerId) {
-      return res.status(403).json({ message: "You are not a seller" });
-    }
+    const seller = req.seller;
+    const propertyId = req.params.id;
 
-    const properties = await Property.find({
-      sellerId: req.user.linkedProfiles.sellerId,
-    }).sort({ createdAt: -1 });
+    let updateData = { ...req.body };
 
-    res.status(200).json({ properties });
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-exports.getPropertyById = async (req, res) => {
-  try {
-    const property = await Property.findById(req.params.id)
-      .populate("owner", "name email")
-      .populate("category")
-      .populate("subcategory");
-
-    if (!property) {
-      return res.status(404).json({ message: "Property not found" });
-    }
-
-    res.status(200).json({ property });
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-exports.updateProperty = async (req, res) => {
-  try {
-    const sellerId = req.user.linkedProfiles?.sellerId;
-
-    if (!sellerId) {
-      return res
-        .status(403)
-        .json({ message: "Only sellers can update properties" });
-    }
-
-    // Check ownership
+    // -----------------------------
+    // 1️⃣ Seller authentication check
+    // -----------------------------
     const property = await Property.findOne({
-      _id: req.params.id,
-      sellerId: sellerId,
+      _id: propertyId,
+      sellerId: seller._id,
     });
 
     if (!property) {
-      return res
-        .status(404)
-        .json({ message: "Property not found or unauthorized" });
+      return next(new errorHandler("Property not found or unauthorized", 404));
     }
 
-    const updates = req.body;
+    // -----------------------------
+    // 2️⃣ Price + Discount Validation
+    // -----------------------------
+    if (updateData.price && updateData.discountPrice) {
+      if (updateData.discountPrice >= updateData.price) {
+        return next(
+          new errorHandler(
+            "Discount price must be less than the actual price",
+            400
+          )
+        );
+      }
+    }
 
-    // Images update if needed
-    if (req.files && req.files.images) {
-      updates.images = req.files.images.map((file) => ({
+    if (updateData.discountPrice && !updateData.price) {
+      if (updateData.discountPrice >= property.price) {
+        return next(
+          new errorHandler(
+            "Discount price must be less than the existing price",
+            400
+          )
+        );
+      }
+    }
+
+    // -----------------------------
+    // 3️⃣ Validate category & subcategory
+    // -----------------------------
+    if (updateData.category) {
+      const category = await Category.findById(updateData.category);
+      if (!category)
+        return next(new errorHandler("Invalid category selected", 400));
+    }
+
+    if (updateData.subcategory) {
+      const sub = await Subcategory.findById(updateData.subcategory);
+      if (!sub)
+        return next(new errorHandler("Invalid subcategory selected", 400));
+
+      if (
+        updateData.category &&
+        sub.category.toString() !== updateData.category
+      ) {
+        return next(
+          new errorHandler("Subcategory does not belong to the category", 400)
+        );
+      }
+    }
+
+    // -----------------------------
+    // 4️⃣ Update slug when title changes
+    // -----------------------------
+    if (updateData.title) {
+      updateData.slug = slugify(`${updateData.title}-${Date.now()}`, {
+        lower: true,
+      });
+    }
+
+    // ----------------------------------------
+    // 5️⃣ Handle image uploads (multer + cloud)
+    // ----------------------------------------
+    if (req.files?.images) {
+      const images = req.files.images.map((file) => ({
         url: file.path,
-        caption: file.originalname,
+        caption: "",
       }));
+      property.images.push(...images);
     }
 
+    // ----------------------------------------
+    // 6️⃣ Handle floor plan upload
+    // ----------------------------------------
+    if (req.files?.floorPlan) {
+      updateData.floorPlan = req.files.floorPlan[0].path;
+    }
+
+    // ----------------------------------------
+    // 7️⃣ Final Property Update
+    // ----------------------------------------
     const updatedProperty = await Property.findByIdAndUpdate(
-      req.params.id,
-      updates,
-      { new: true, runValidators: true }
+      propertyId,
+      updateData,
+      {
+        new: true,
+        runValidators: true,
+      }
     );
 
-    res.status(200).json({
+    return res.status(200).json({
+      success: true,
       message: "Property updated successfully",
-      updatedProperty,
+      property: updatedProperty,
     });
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
+  } catch (err) {
+    console.log("Update Property Error:", err);
+    return next(new errorHandler(err.message, 500));
   }
 };
 
-exports.deleteProperty = async (req, res) => {
+exports.deleteProperty = async (req, res, next) => {
   try {
-    const sellerId = req.user.linkedProfiles?.sellerId;
+    // const seller = req.seller;
+    const seller = await Seller.findById(req.seller._id);
+
+    const prop = await Property.findOne({
+      _id: req.params.id,
+      sellerId: seller._id,
+    });
+
+    if (!prop) return next(new errorHandler("Unauthorized or not found", 404));
+
+    await prop.deleteOne();
+
+    // seller.properties.pull(prop._id);
+    seller.properties = seller.properties.filter(
+      (p) => p.toString() !== prop._id.toString()
+    );
+    seller.totalListings = seller.properties.length;
+
+    await seller.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Property deleted successfully",
+    });
+  } catch (err) {
+    next(new errorHandler(err.message, 500));
+  }
+};
+
+exports.getMyProperties = async (req, res, next) => {
+  try {
+    const seller = req.seller;
+
+    const properties = await Property.find({ sellerId: seller._id })
+      .populate("category subcategory")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: properties.length,
+      properties,
+    });
+  } catch (err) {
+    next(new errorHandler(err.message, 500));
+  }
+};
+
+exports.getPropertyById = async (req, res, next) => {
+  try {
+    const prop = await Property.findById(req.params.id).populate(
+      "category subcategory sellerId owner"
+    );
+
+    if (!prop) return next(new errorHandler("Property not found", 404));
+
+    // Count view
+    prop.views += 1;
+    await prop.save();
+
+    res.status(200).json({ success: true, property: prop });
+  } catch (err) {
+    next(new errorHandler(err.message, 500));
+  }
+};
+
+exports.uploadPropertyImages = async (req, res, next) => {
+  try {
+    const seller = req.seller;
 
     const property = await Property.findOne({
       _id: req.params.id,
-      sellerId: sellerId,
+      sellerId: seller._id,
     });
 
-    if (!property) {
-      return res
-        .status(404)
-        .json({ message: "Property not found or unauthorized" });
+    if (!property)
+      return next(new errorHandler("Unauthorized or property not found", 404));
+
+    if (!req.files || req.files.length === 0)
+      return next(new errorHandler("No images uploaded", 400));
+
+    const uploadedImages = req.files.map((file) => ({
+      url: file.path, // Cloudinary or local url
+      caption: req.body.caption || "",
+    }));
+
+    property.images.push(...uploadedImages);
+
+    await property.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Images uploaded successfully",
+      images: property.images,
+    });
+  } catch (err) {
+    next(new errorHandler(err.message, 500));
+  }
+};
+
+exports.setAvailability = async (req, res, next) => {
+  try {
+    const seller = req.seller;
+    const { status } = req.body;
+
+    if (!["Available", "Booked", "Sold", "Rented"].includes(status)) {
+      return next(new errorHandler("Invalid property status", 400));
     }
 
-    await property.deleteOne();
-
-    // Reduce seller listings
-    await Seller.findByIdAndUpdate(sellerId, {
-      $inc: { totalListings: -1 },
+    const prop = await Property.findOne({
+      _id: req.params.id,
+      sellerId: seller._id,
     });
 
-    res.status(200).json({ message: "Property deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    if (!prop) return next(new errorHandler("Property not found", 404));
+
+    prop.status = status;
+    await prop.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Property status updated",
+      property: prop,
+    });
+  } catch (err) {
+    next(new errorHandler(err.message, 500));
+  }
+};
+
+// PUBLIC: Get all active properties
+exports.getAllPublicProperties = async (req, res, next) => {
+  try {
+    const properties = await Property.find({
+      status: "Available",
+      isActive: true,
+      approvedByAdmin: true, // optional but recommended
+    })
+      .populate("category subcategory")
+      .select(
+        "title description price discountPrice location areaSqFt bedrooms bathrooms propertyType furnished images societyName parking"
+      )
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: properties.length,
+      properties,
+    });
+  } catch (err) {
+    next(new errorHandler(err.message, 500));
   }
 };

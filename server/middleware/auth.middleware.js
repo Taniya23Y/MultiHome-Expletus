@@ -105,6 +105,41 @@ const protect = async (req, res, next) => {
         return next(new ErrorHandler("Invalid or expired token", 401));
     }
 
+    // if (isSeller) {
+    //   const seller = await Seller.findById(decoded.id);
+    //   if (!seller) return next(new ErrorHandler("Seller not found", 404));
+
+    //   const sessionRaw = await redis.get(`seller_session:${seller._id}`);
+    //   if (!sessionRaw)
+    //     return next(new ErrorHandler("Seller session expired", 401));
+
+    //   const session = JSON.parse(sessionRaw);
+    //   if (session.sid !== decoded.sid)
+    //     return next(new ErrorHandler("Invalid seller session", 401));
+
+    //   req.seller = seller;
+    //   return next();
+    // }
+
+    // Load USER
+
+    // ---------------- USER (admin / super-admin / user) ----------------
+    if (!isSeller) {
+      const user = await User.findById(decoded.id);
+      if (!user) return next(new ErrorHandler("User not found", 404));
+
+      const sessionRaw = await redis.get(`session:${user._id}`);
+      if (!sessionRaw) return next(new ErrorHandler("Session expired", 401));
+
+      const session = JSON.parse(sessionRaw);
+      if (session.sid !== decoded.sid)
+        return next(new ErrorHandler("Invalid session", 401));
+
+      req.user = user;
+      return next();
+    }
+
+    // ---------------- SELLER ----------------
     if (isSeller) {
       const seller = await Seller.findById(decoded.id);
       if (!seller) return next(new ErrorHandler("Seller not found", 404));
@@ -121,7 +156,6 @@ const protect = async (req, res, next) => {
       return next();
     }
 
-    // Load USER
     const user = await User.findById(decoded.id);
     if (!user) return next(new ErrorHandler("User not found", 404));
 
@@ -172,7 +206,7 @@ const protectOptional = async (req, res, next) => {
     const userAccess = req.cookies?.access_token;
     const userRefresh = req.cookies?.refresh_token;
 
-    if (!userAccess && !userRefresh) return next(); // truly optional
+    if (!userAccess && !userRefresh) return next();
 
     let decoded = null;
 
@@ -223,6 +257,6 @@ module.exports = {
   protectOptional,
   authorize,
   sellerAuthorize,
-  adminOnly: authorize("Admin"),
-  superAdminOnly: authorize("SuperAdmin"),
+  adminOnly: authorize("admin"),
+  superAdminOnly: authorize("super-admin"),
 };

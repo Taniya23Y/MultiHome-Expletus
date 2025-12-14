@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const slugify = require("slugify");
 
 const subcategorySchema = new mongoose.Schema(
   {
@@ -8,6 +9,12 @@ const subcategorySchema = new mongoose.Schema(
       trim: true,
       minlength: [2, "Subcategory name must be at least 2 characters long"],
     },
+
+    slug: {
+      type: String,
+      index: true,
+    },
+
     type: {
       type: String,
       enum: [
@@ -19,19 +26,21 @@ const subcategorySchema = new mongoose.Schema(
         "Office Space",
         "Other",
       ],
-      required: [true, "Subcategory type is required"],
       default: "Residential",
     },
+
     description: {
       type: String,
       trim: true,
       maxlength: [300, "Description cannot exceed 300 characters"],
     },
+
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
-      required: [true, "Parent category is required"],
+      required: true,
     },
+
     isActive: {
       type: Boolean,
       default: true,
@@ -40,17 +49,23 @@ const subcategorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// subcategory.type with parent category.type
 subcategorySchema.pre("save", async function (next) {
   if (this.isModified("category") || this.isNew) {
     const Category = mongoose.model("Category");
     const parentCategory = await Category.findById(this.category);
+
     if (parentCategory) {
       this.type = parentCategory.type;
     }
   }
+
+  if (this.isModified("name")) {
+    this.slug = slugify(this.name, { lower: true });
+  }
+
   next();
 });
 
-const Subcategory = mongoose.model("Subcategory", subcategorySchema);
-module.exports = Subcategory;
+subcategorySchema.index({ name: 1, category: 1 }, { unique: true });
+
+module.exports = mongoose.model("Subcategory", subcategorySchema);

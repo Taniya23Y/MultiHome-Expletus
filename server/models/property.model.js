@@ -21,12 +21,32 @@ const propertySchema = new mongoose.Schema(
     discountPrice: {
       type: Number,
       validate: {
-        validator: function (v) {
+        validator: async function (v) {
+          // Case 1: During UPDATE operations
+          if (this instanceof mongoose.Query) {
+            const update = this.getUpdate();
+
+            // If price and discountPrice both are provided in update
+            if (update.price && v !== undefined) {
+              return v < update.price;
+            }
+
+            // If only discountPrice is being updated → fetch existing price
+            const docToUpdate = await this.model
+              .findOne(this.getQuery())
+              .lean();
+            if (!docToUpdate) return true;
+
+            return v < docToUpdate.price;
+          }
+
+          // Case 2: During CREATE or SAVE
           return v < this.price;
         },
         message: "Discount price must be less than the actual price",
       },
     },
+
     maintenanceFee: { type: Number, min: 0, default: 0 },
     securityDeposit: { type: Number, min: 0, default: 0 },
 
@@ -37,14 +57,53 @@ const propertySchema = new mongoose.Schema(
         required: true,
         enum: [
           "Vijay Nagar",
+          "Vijay Nagar Extension",
           "Bhawarkua",
           "Palasia",
+          "New Palasia",
+          "LIG Square",
           "Rau",
           "MR-10",
-          "New Palasia",
-          "Scheme 54",
+          "MR-9",
           "Tilak Nagar",
           "Rajendra Nagar",
+          "Silicon City",
+          "Scheme 54",
+          "Scheme 40",
+          "Scheme 41",
+          "Scheme 56",
+          "Scheme 71",
+          "Scheme 74",
+          "Scheme 78",
+          "Scheme 89",
+          "Geeta Bhawan",
+          "Navlakha",
+          "Indrapuri",
+          "Bhanwarkua Extension",
+          "AB Road",
+          "Nipania",
+          "Mhow Road",
+          "Dewas Naka",
+          "Palasia Square",
+          "Nauganj",
+          "Vishnu Nagar",
+          "Kesarbagh",
+          "Rajiv Gandhi Nagar",
+          "Chandan Nagar",
+          "Kanadiya Road",
+          "Shivaji Nagar",
+          "Kalani Nagar",
+          "Mangaliya",
+          "Sukhliya",
+          "Saket Nagar",
+          "Scheme 25",
+          "Scheme 33",
+          "Scheme 45",
+          "Scheme 46",
+          "Scheme 54A",
+          "Scheme 54B",
+          "Scheme 62",
+          "Scheme 64",
           "Other",
         ],
       },
@@ -117,12 +176,17 @@ const propertySchema = new mongoose.Schema(
     videos: [{ url: String, caption: String }],
     floorPlan: String,
 
-    owner: {
+    sellerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Seller",
       required: true,
     },
-    sellerId: {
+
+    sellerCode: {
+      type: String,
+      required: true,
+    },
+    owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Seller",
       required: true,
@@ -137,7 +201,6 @@ const propertySchema = new mongoose.Schema(
       ],
       default: "Freehold",
     },
-
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
@@ -196,19 +259,22 @@ const propertySchema = new mongoose.Schema(
 );
 
 propertySchema.pre("save", async function (next) {
-  if (this.subcategory) {
-    const Subcategory = mongoose.model("Subcategory");
-    const subcat = await Subcategory.findById(this.subcategory).populate(
-      "category"
-    );
-    if (!subcat) {
-      return next(new Error("Invalid subcategory selected"));
-    }
-
-    if (this.category.toString() !== subcat.category._id.toString()) {
-      return next(
-        new Error("Subcategory does not belong to the selected category")
+  // Only validate if category or subcategory changed
+  if (this.isModified("category") || this.isModified("subcategory")) {
+    if (this.subcategory) {
+      const Subcategory = mongoose.model("Subcategory");
+      const subcat = await Subcategory.findById(this.subcategory).populate(
+        "category"
       );
+      if (!subcat) {
+        return next(new Error("Invalid subcategory selected"));
+      }
+
+      if (this.category.toString() !== subcat.category._id.toString()) {
+        return next(
+          new Error("Subcategory does not belong to the selected category")
+        );
+      }
     }
   }
   next();

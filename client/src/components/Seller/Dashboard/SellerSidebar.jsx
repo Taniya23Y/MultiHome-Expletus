@@ -32,6 +32,7 @@ const SellerSidebar = () => {
       icon: <Building2 />,
       submenu: [
         "Add property",
+        "View properties",
         "Edit property details",
         "Manage availability",
         "Set pricing",
@@ -76,7 +77,7 @@ const SellerSidebar = () => {
       title: "Settings",
       icon: <Settings />,
       submenu: [
-        "Personal info",
+        "Profile",
         "Bank details",
         "Identity verification",
         "Notification preferences",
@@ -105,7 +106,7 @@ const SellerSidebar = () => {
       {/* SIDEBAR */}
       <div
         className={`fixed top-0 left-0 h-screen bg-[#0D1117] text-white shadow-lg border-r border-gray-800
-        flex flex-col justify-between transition-all duration-300 z-50
+        flex flex-col justify-between transition-all duration-300 z-50+
         ${collapsed ? "w-20" : "w-64"}
         ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
