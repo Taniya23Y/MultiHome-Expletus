@@ -38,6 +38,7 @@ import SellerDashboardHero from "./components/Seller/Dashboard/SellerDashboardHe
 import SellerSubPage from "./components/Seller/Dashboard/SellerSubPage";
 import AdminSubPage from "./components/Admin/Dashboard/AdminSubPage";
 import AdminDashboardHero from "./components/Admin/Dashboard/AdminDashboardHero";
+import PropertyDetailPage from "./components/Screens/PropertyPage/PropertyDetailPage";
 
 function App() {
   const dispatch = useDispatch();
@@ -71,9 +72,11 @@ function App() {
     [pathname]
   );
 
-  const userRefresh = useRefreshTokenQuery(undefined, {
-    skip: !isUserRoute,
-  });
+  // const userRefresh = useRefreshTokenQuery(undefined, {
+  //   skip: !isUserRoute,
+  // });
+  const userRefresh = useRefreshTokenQuery();
+
   const sellerRefresh = useSellerRefreshQuery(undefined, {
     skip: !isSellerRoute,
   });
@@ -145,25 +148,29 @@ function App() {
           <Route path="/seller/profile" element={<SellerProfile />} />
         </Route>
 
-        {/* <Route element={<AdminPrivateRoute loading={loading} />}>
+        <Route element={<AdminPrivateRoute loading={loading} />}>
           <Route
             path="/admin/dashboard"
             element={<AdminLayout key="admin-layout" />}
           >
-            <Route element={<AdminDashboardHero />} />
+            <Route index element={<AdminDashboardHero />} />
             <Route path=":section" element={<AdminSubPage />} />
           </Route>
-        </Route> */}
+        </Route>
 
         <Route path="/property-detail/:id" element={<PropertyDetail />} />
-
         <Route
+          path="/property-detail-page/:id"
+          element={<PropertyDetailPage />}
+        />
+
+        {/* <Route
           path="/admin/dashboard"
           element={<AdminLayout key="admin-layout" />}
         >
           <Route element={<AdminDashboardHero />} />
           <Route path=":section" element={<AdminSubPage />} />
-        </Route>
+        </Route> */}
 
         <Route path="*" element={<NotFound />} />
       </Routes>

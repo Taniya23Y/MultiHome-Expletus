@@ -1,194 +1,186 @@
-import React, { useState } from "react";
-import { dummyProperties } from "../../../utils/dummyData/CrudData.js";
-import { Link } from "react-router-dom";
-import { FaEdit, FaTrash } from "react-icons/fa";
-import Button from "../../UI/Button.jsx";
-import DashboardHeader from "./DashboardHeader.jsx";
+import React from "react";
+import {
+  Users,
+  Server,
+  Activity,
+  Wallet,
+  FileText,
+  TrendingUp,
+} from "lucide-react";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
-const AdminDashboardHero = ({ activeTab }) => {
-  const [properties, setProperties] = useState(dummyProperties);
-  const [form, setForm] = useState({
-    id: "",
-    name: "",
-    city: "",
-    country: "",
-    type: "",
-    image: "",
-    description: "",
-    price: "",
-  });
+const platformStats = [
+  { name: "Active Users", value: 3782 },
+  { name: "New Signups", value: 215 },
+  { name: "Total Servers", value: 12 },
+  { name: "Revenue ($)", value: 12400 },
+  { name: "Pending Requests", value: 32 },
+  { name: "Avg Rating", value: 4.7 },
+];
 
-  // --- CREATE ---
-  const handleAdd = () => {
-    if (!form.name) return alert("Enter property name");
-    const newProp = { ...form, id: Date.now() };
-    setProperties([...properties, newProp]);
-    setForm({
-      id: "",
-      name: "",
-      city: "",
-      country: "",
-      type: "",
-      image: "",
-      description: "",
-      price: "",
-    });
-  };
+const dailyActivity = [
+  { day: "Mon", users: 120 },
+  { day: "Tue", users: 200 },
+  { day: "Wed", users: 150 },
+  { day: "Thu", users: 220 },
+  { day: "Fri", users: 300 },
+  { day: "Sat", users: 180 },
+  { day: "Sun", users: 250 },
+];
 
-  // --- DELETE ---
-  const handleDelete = (id) => {
-    const newList = properties.filter((p) => p.id !== id);
-    setProperties(newList);
-  };
+const totalUsers = [
+  { name: "Free Users", value: 5000 },
+  { name: "Premium Users", value: 2500 },
+];
 
-  // --- EDIT ---
-  const handleEdit = (id) => {
-    const prop = properties.find((p) => p.id === id);
-    if (prop) setForm(prop);
-  };
+const revenueAnalytics = [
+  { month: "Jan", value: 4000 },
+  { month: "Feb", value: 3200 },
+  { month: "Mar", value: 5000 },
+  { month: "Apr", value: 4700 },
+  { month: "May", value: 5200 },
+];
 
-  // --- UPDATE ---
-  const handleUpdate = () => {
-    const updatedList = properties.map((p) => (p.id === form.id ? form : p));
-    setProperties(updatedList);
-    setForm({
-      id: "",
-      name: "",
-      city: "",
-      country: "",
-      type: "",
-      image: "",
-      description: "",
-      price: "",
-    });
-  };
+const systemLogs = [
+  "Server restarted at 03:45 AM",
+  "New admin created: John Doe",
+  "Database backup completed",
+  "User 'alice' updated profile",
+];
+
+export default function AdminDashboard() {
+  const stats = [
+    {
+      title: "Dashboard Overview",
+      value: "",
+      icon: <Server className="w-6 h-6" />,
+      info: "Summary of system metrics",
+    },
+    {
+      title: "Platform Stats",
+      value: "",
+      icon: <TrendingUp className="w-6 h-6" />,
+      info: "Active users and servers",
+    },
+    {
+      title: "Daily Activity",
+      value: "",
+      icon: <Activity className="w-6 h-6" />,
+      info: "User activity trends",
+    },
+    {
+      title: "Total Users",
+      value: "",
+      icon: <Users className="w-6 h-6" />,
+      info: "Registered users breakdown",
+    },
+    {
+      title: "Revenue Analytics",
+      value: "",
+      icon: <Wallet className="w-6 h-6" />,
+      info: "Revenue trends",
+    },
+    {
+      title: "System Logs",
+      value: "",
+      icon: <FileText className="w-6 h-6" />,
+      info: "Recent system events",
+    },
+  ];
 
   return (
-    <main className="flex-1 bg-gray-50 min-h-screen">
-      <DashboardHeader />
-
-      <div className="px-4 sm:px-6 pt-24 pb-10">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white shadow-md rounded-2xl px-4 sm:px-6 py-4 mb-6 gap-3 sm:gap-0">
-          <h1 className="text-xl sm:text-2xl font-semibold text-gray-800">
-            🏠 Admin Dashboard
-          </h1>
-        </div>
-
-        {/* --- VIEW TAB: Table --- */}
-        {activeTab === "view" && (
-          <div className="overflow-x-auto bg-white p-4 rounded-xl shadow-md">
-            <table className="min-w-full text-sm sm:text-base">
-              <thead className="bg-gray-200 text-gray-700">
-                <tr>
-                  <th className="px-3 sm:px-4 py-2">ID</th>
-                  <th className="px-3 sm:px-4 py-2">Name</th>
-                  <th className="px-3 sm:px-4 py-2">City</th>
-                  <th className="px-3 sm:px-4 py-2">Type</th>
-                  <th className="px-3 sm:px-4 py-2">Price</th>
-                  <th className="px-3 sm:px-4 py-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {properties.map((prop) => (
-                  <tr
-                    key={prop.id}
-                    className="border-b hover:bg-gray-50 transition"
-                  >
-                    <td className="px-3 sm:px-4 py-2">{prop.id}</td>
-                    <td className="px-3 sm:px-4 py-2">{prop.name}</td>
-                    <td className="px-3 sm:px-4 py-2">{prop.city}</td>
-                    <td className="px-3 sm:px-4 py-2">{prop.type}</td>
-                    <td className="px-3 sm:px-4 py-2">{prop.price}</td>
-                    <td className="px-3 sm:px-4 py-2 flex gap-3">
-                      <button
-                        onClick={() => handleEdit(prop.id)}
-                        className="text-blue-500 hover:text-blue-700"
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(prop.id)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <FaTrash />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+    <div className="w-full p-4 md:p-6 space-y-6">
+      {/* Admin Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {stats.map((item, index) => (
+          <div
+            key={index}
+            className="bg-white rounded-2xl p-4 shadow flex flex-col hover:shadow-md transition-all"
+          >
+            <div className="p-3 bg-gray-100 rounded-xl w-fit">{item.icon}</div>
+            <p className="text-gray-600 mt-4 font-semibold">{item.title}</p>
+            <p className="text-sm text-gray-500 mt-1">{item.info}</p>
           </div>
-        )}
-
-        {/* --- ADD TAB --- */}
-        {activeTab === "add" && (
-          <div className="bg-white p-5 sm:p-6 rounded-xl shadow-md w-full max-w-xl mx-auto">
-            <h2 className="text-lg sm:text-xl font-semibold mb-4">
-              Add New Property
-            </h2>
-            {["name", "city", "country", "price", "image"].map((field) => (
-              <input
-                key={field}
-                type="text"
-                placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-                value={form[field]}
-                onChange={(e) => setForm({ ...form, [field]: e.target.value })}
-                className="border p-2 rounded w-full mb-2 text-sm sm:text-base"
-              />
-            ))}
-            <button
-              onClick={handleAdd}
-              className="bg-[#7FC68A] w-full sm:w-auto text-white px-4 py-2 rounded-lg"
-            >
-              Add Property
-            </button>
-          </div>
-        )}
-
-        {/* --- EDIT TAB --- */}
-        {activeTab === "edit" && (
-          <div className="bg-white p-5 sm:p-6 rounded-xl shadow-md w-full max-w-xl mx-auto">
-            <h2 className="text-lg sm:text-xl font-semibold mb-4">
-              Edit Property
-            </h2>
-            <input
-              type="text"
-              placeholder="Enter ID to Fetch"
-              value={form.id}
-              onChange={(e) => setForm({ ...form, id: Number(e.target.value) })}
-              className="border p-2 rounded w-full mb-3 text-sm sm:text-base"
-            />
-            <button
-              onClick={() => handleEdit(Number(form.id))}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg mb-4 w-full sm:w-auto"
-            >
-              Fetch Property
-            </button>
-            {["name", "description", "city", "country", "type", "price"].map(
-              (field) => (
-                <input
-                  key={field}
-                  type="text"
-                  placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-                  value={form[field]}
-                  onChange={(e) =>
-                    setForm({ ...form, [field]: e.target.value })
-                  }
-                  className="border p-2 rounded w-full mb-2 text-sm sm:text-base"
-                />
-              )
-            )}
-            <button
-              onClick={handleUpdate}
-              className="bg-[#7FC68A] text-white px-4 py-2 rounded-lg w-full sm:w-auto"
-            >
-              Update Property
-            </button>
-          </div>
-        )}
+        ))}
       </div>
-    </main>
-  );
-};
 
-export default AdminDashboardHero;
+      {/* Platform Stats */}
+      <div className="bg-white p-6 rounded-2xl shadow">
+        <h2 className="text-xl font-semibold mb-4">Platform Stats</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {platformStats.map((stat, index) => (
+            <div key={index} className="bg-gray-50 rounded-xl p-4 text-center">
+              <p className="text-gray-500">{stat.name}</p>
+              <p className="text-2xl font-bold">{stat.value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Daily Activity Chart */}
+      <div className="bg-white p-6 rounded-2xl shadow">
+        <h2 className="text-xl font-semibold mb-4">Daily Activity</h2>
+        <div className="w-full h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={dailyActivity}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="day" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="users" fill="#4C6EF5" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Total Users */}
+      <div className="bg-white p-6 rounded-2xl shadow grid grid-cols-2 gap-4">
+        {totalUsers.map((user, index) => (
+          <div
+            key={index}
+            className="bg-gray-50 rounded-xl p-4 text-center flex flex-col justify-center"
+          >
+            <p className="text-gray-500">{user.name}</p>
+            <p className="text-2xl font-bold">{user.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Revenue Analytics */}
+      <div className="bg-white p-6 rounded-2xl shadow">
+        <h2 className="text-xl font-semibold mb-4">Revenue Analytics</h2>
+        <div className="w-full h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={revenueAnalytics}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Line type="monotone" dataKey="value" stroke="#4C6EF5" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* System Logs */}
+      <div className="bg-white p-6 rounded-2xl shadow">
+        <h2 className="text-xl font-semibold mb-4">System Logs</h2>
+        <ul className="text-gray-700 text-sm space-y-2">
+          {systemLogs.map((log, index) => (
+            <li key={index}>• {log}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}

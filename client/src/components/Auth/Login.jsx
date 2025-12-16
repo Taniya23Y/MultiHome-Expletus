@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
@@ -7,12 +7,23 @@ import { FcGoogle } from "react-icons/fc";
 import { assets } from "../../assets/data";
 import { useLoginUserMutation } from "../../redux/features/auth/authApi";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-
+  const { user, isLoggedIn } = useSelector((state) => state.auth);
   const [loginUser, { isLoading }] = useLoginUserMutation();
+
+  useEffect(() => {
+    if (!isLoggedIn || !user) return;
+
+    if (user.role === "admin") {
+      navigate("/admin/dashboard", { replace: true });
+    } else {
+      navigate("/", { replace: true });
+    }
+  }, [isLoggedIn, user, navigate]);
 
   // Yup Validation Schema
   const LoginSchema = Yup.object().shape({
@@ -61,7 +72,7 @@ const Login = () => {
 
                 resetForm();
 
-                navigate("/");
+                // navigate("/");
               } catch (error) {
                 toast.error(error?.data?.message || "Invalid credentials!");
               }

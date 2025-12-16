@@ -1,9 +1,25 @@
 import { useParams } from "react-router-dom";
+import AdminDashboardHero from "./AdminDashboardHero";
+import AllProperties from "../AdminFunctionality/AllProperties";
+import PendingApprovals from "../AdminFunctionality/PendingApprovals";
+import FlaggedProperties from "../AdminFunctionality/FlaggedProperties";
+import BoostedListings from "../AdminFunctionality/BoostedListings";
+import OwnerVerification from "../AdminFunctionality/OwnerVerification";
+import UsersList from "../AdminFunctionality/UsersList";
+import SellersList from "../AdminFunctionality/SellersList";
 
 export default function AdminSubPage() {
   const { section } = useParams();
 
   const pages = {
+    "Dashboard-Overview": <AdminDashboardHero />,
+    "users-list": <UsersList />,
+    "sellers-multiowners": <SellersList />,
+    "all-properties": <AllProperties />,
+    "pending-approvals": <PendingApprovals />,
+    "flagged-properties": <FlaggedProperties />,
+    "boosted-listings": <BoostedListings />,
+    "owner-verification-status": <OwnerVerification />,
     "Platform stats": <div>Edit Property Page Coming Soon</div>,
     "Daily activity": <div>Edit Property Page Coming Soon</div>,
     "Total users": <div>Edit Property Page Coming Soon</div>,

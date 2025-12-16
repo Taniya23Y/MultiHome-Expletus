@@ -74,12 +74,13 @@ exports.createProperty = async (req, res, next) => {
     const slug = slugify(`${title}-${Date.now()}`, { lower: true });
 
     let uploadedImages = [];
-    if (req.files?.images) {
-      uploadedImages = req.files.images.map((file) => ({
+    if (req.files && req.files.length > 0) {
+      uploadedImages = req.files.map((file) => ({
         url: file.path,
         caption: "",
       }));
     }
+
     let floorPlanUrl = "";
     if (req.files?.floorPlan) {
       floorPlanUrl = req.files.floorPlan[0].path;
@@ -479,7 +480,6 @@ exports.setAvailability = async (req, res, next) => {
   }
 };
 
-// PUBLIC: Get all active properties
 exports.getAllPublicProperties = async (req, res, next) => {
   try {
     const properties = await Property.find({

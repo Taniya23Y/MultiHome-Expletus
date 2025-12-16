@@ -10,21 +10,18 @@ export const categoryApi = createApi({
   tagTypes: ["Categories", "SingleCategory"],
 
   endpoints: (builder) => ({
-    // ---------------------- GET ALL CATEGORIES ----------------------
     getCategories: builder.query({
       query: () => "/categories",
       providesTags: ["Categories"],
       transformResponse: (response) => response.categories,
     }),
 
-    // ---------------------- GET CATEGORY BY ID ----------------------
     getCategoryById: builder.query({
       query: (id) => `/category/${id}`,
       providesTags: ["SingleCategory"],
       transformResponse: (response) => response.category,
     }),
 
-    // ---------------------- CREATE CATEGORY (Admin only) ----------------------
     createCategory: builder.mutation({
       query: (data) => ({
         url: "/create-category",
@@ -34,7 +31,6 @@ export const categoryApi = createApi({
       invalidatesTags: ["Categories"],
     }),
 
-    // ---------------------- UPDATE CATEGORY (Admin only) ----------------------
     updateCategory: builder.mutation({
       query: ({ id, data }) => ({
         url: `/category/${id}`,
@@ -44,7 +40,6 @@ export const categoryApi = createApi({
       invalidatesTags: ["Categories", "SingleCategory"],
     }),
 
-    // ---------------------- DELETE CATEGORY (Admin only) ----------------------
     deleteCategory: builder.mutation({
       query: (id) => ({
         url: `/category/${id}`,
@@ -55,7 +50,6 @@ export const categoryApi = createApi({
   }),
 });
 
-// Export hooks for usage in functional components
 export const {
   useGetCategoriesQuery,
   useGetCategoryByIdQuery,

@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { adminLogoutState } from "./adminAuthSlice";
 
 export const adminPropertyApi = createApi({
   reducerPath: "adminPropertyApi",
@@ -9,13 +10,11 @@ export const adminPropertyApi = createApi({
   tagTypes: ["AdminProperties"],
 
   endpoints: (builder) => ({
-    // Pending properties
     getPendingProperties: builder.query({
       query: () => "/properties/pending",
       providesTags: ["AdminProperties"],
     }),
 
-    // Approve / Reject
     approveProperty: builder.mutation({
       query: ({ id, approved }) => ({
         url: `/properties/${id}/approve`,
@@ -24,8 +23,73 @@ export const adminPropertyApi = createApi({
       }),
       invalidatesTags: ["AdminProperties"],
     }),
+
+    getFlaggedProperties: builder.query({
+      query: () => "/properties/flagged",
+      providesTags: ["AdminProperties"],
+    }),
+
+    getBoostedProperties: builder.query({
+      query: () => "/properties/boosted",
+      providesTags: ["AdminProperties"],
+    }),
+
+    getOwnerVerificationProperties: builder.query({
+      query: () => "/properties/owner-verification",
+      providesTags: ["AdminProperties"],
+    }),
+
+    getUserList: builder.query({
+      query: () => ({
+        url: `/users`,
+        method: "GET",
+      }),
+      providesTags: ["AdminProperties"],
+    }),
+
+    getSellerList: builder.query({
+      query: () => ({
+        url: `/sellers`,
+        method: "GET",
+      }),
+      providesTags: ["AdminProperties"],
+    }),
+
+    verifyUser: builder.mutation({
+      query: (id) => ({
+        url: `/verify-user/${id}`,
+        method: "PUT",
+      }),
+    }),
+
+    toggleBanUser: builder.mutation({
+      query: (id) => ({
+        url: `/ban-user/${id}`,
+        method: "PUT",
+      }),
+    }),
+
+    adminLogout: builder.mutation({
+      query: () => ({
+        url: "/logout",
+        method: "POST",
+      }),
+      async onQueryStarted(_, { dispatch }) {
+        dispatch(adminLogoutState());
+      },
+    }),
   }),
 });
 
-export const { useGetPendingPropertiesQuery, useApprovePropertyMutation } =
-  adminPropertyApi;
+export const {
+  useGetPendingPropertiesQuery,
+  useApprovePropertyMutation,
+  useGetBoostedPropertiesQuery,
+  useGetFlaggedPropertiesQuery,
+  useGetOwnerVerificationPropertiesQuery,
+  useGetUserListQuery,
+  useGetSellerListQuery,
+  useVerifyUserMutation,
+  useToggleBanUserMutation,
+  useAdminLogoutMutation,
+} = adminPropertyApi;

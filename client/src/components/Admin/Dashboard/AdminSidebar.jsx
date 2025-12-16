@@ -30,20 +30,12 @@ const AdminSidebar = () => {
     {
       title: "Dashboard Overview",
       icon: <Home />,
-      submenu: [
-        "Platform stats",
-        "Daily activity",
-        "Total users",
-        "Revenue analytics",
-        "System logs",
-      ],
     },
     {
       title: "User Management",
       icon: <Users />,
       submenu: [
-        "Buyers list",
-        "Tenants list",
+        "Users list",
         "Sellers / multiowners",
         "Helpers",
         "Verify users",

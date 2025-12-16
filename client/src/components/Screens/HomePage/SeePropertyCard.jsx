@@ -50,10 +50,10 @@ const SeePropertyCard = ({
 
         {/* Pricing */}
         <div className="text-[#7FC68A] font-semibold text-lg">
-          {price && <span>₹{price.toLocaleString()}</span>}
-          {salePrice && (
+          {salePrice && <span>₹{salePrice.toLocaleString()}</span>}
+          {price && (
             <span className="ml-2 text-sm text-gray-500 line-through">
-              ₹{salePrice.toLocaleString()}
+              ₹{price.toLocaleString()}
             </span>
           )}
           {rentPrice && <span> / ₹{rentPrice} per month</span>}

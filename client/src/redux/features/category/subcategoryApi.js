@@ -9,19 +9,16 @@ export const subcategoryApi = createApi({
   tagTypes: ["Subcategories", "SingleSubcategory"],
 
   endpoints: (builder) => ({
-    // ---------------------- GET ALL SUBCATEGORIES ----------------------
     getSubcategories: builder.query({
       query: () => "/subcategories",
       providesTags: ["Subcategories"],
     }),
 
-    // ---------------------- GET SUBCATEGORY BY ID ----------------------
     getSubcategoryById: builder.query({
       query: (id) => `/subcategory/${id}`,
       providesTags: ["SingleSubcategory"],
     }),
 
-    // ---------------------- CREATE SUBCATEGORY ----------------------
     createSubcategory: builder.mutation({
       query: (data) => ({
         url: "/create-subcategory",
@@ -31,7 +28,6 @@ export const subcategoryApi = createApi({
       invalidatesTags: ["Subcategories"],
     }),
 
-    // ---------------------- UPDATE SUBCATEGORY ----------------------
     updateSubcategory: builder.mutation({
       query: ({ id, data }) => ({
         url: `/subcategory/${id}`,
@@ -46,7 +42,6 @@ export const subcategoryApi = createApi({
       providesTags: ["Subcategories"],
     }),
 
-    // ---------------------- DELETE SUBCATEGORY ----------------------
     deleteSubcategory: builder.mutation({
       query: (id) => ({
         url: `/subcategory/${id}`,
